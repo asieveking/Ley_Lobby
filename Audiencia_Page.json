@@ -1,0 +1,200 @@
+{
+    "total": 488616,
+    "per_page": 10,
+    "current_page": 47800,
+    "last_page": 48862,
+    "from": 477991,
+    "to": 478000,
+    "data": [
+        {
+            "id_audiencia": 488843, Audiencia.id_audiencia
+            "id_sujeto_pasivo": 336971,id_sujeto_pasivo
+            "id_cargo": 299847,
+            "id_institucion": 132,
+            "nombres": "Miguel",
+            "apellidos": "Marguirot Fajardo",
+            "cargo": "Jefe de la División de Bienestar Social",
+            "nombre_institucion": "Fuerza Aérea de Chile",
+            "referencia": "Empresa que ofrece sus servicios de educación Financiera de manera gratuita para todos los funcionarios",
+            "forma": "P",
+            "lugar": "Gran Avda. paradero 38, Volcán Osorno S/N°, Edificio General Diego Aracena Aguilar, División de Bienestar Social.",
+            "comuna": "El Bosque",
+            "fecha_inicio": "2021-09-14 10:00:00",
+            "fecha_termino": "2021-09-14 10:30:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/336971",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/132",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488843"
+        },
+        {
+            "id_audiencia": 488844,
+            "id_sujeto_pasivo": 336971,
+            "id_cargo": 299847,
+            "id_institucion": 132,
+            "nombres": "Miguel",
+            "apellidos": "Marguirot Fajardo",
+            "cargo": "Jefe de la División de Bienestar Social",
+            "nombre_institucion": "Fuerza Aérea de Chile",
+            "referencia": "Profesional que ofrece sus servicios, por medio de un contrato en el área de la Administración  Financiera",
+            "forma": "P",
+            "lugar": "Gran Avda. parad.38, Volcán Osorno S/N°, Edificio General Diego Aracena Aguilar, División de Bienestar Social",
+            "comuna": "El Bosque",
+            "fecha_inicio": "2021-09-14 11:00:00",
+            "fecha_termino": "2021-09-14 11:30:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/336971",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/132",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488844"
+        },
+        {
+            "id_audiencia": 488845,
+            "id_sujeto_pasivo": 491132,
+            "id_cargo": 355209,
+            "id_institucion": 144,
+            "nombres": "Raúl",
+            "apellidos": "Jorquera",
+            "cargo": "Jefe(a) de servicio",
+            "nombre_institucion": "Dirección General de Aeronáutica Civil",
+            "referencia": "Presentación familia ascendente de piloto fallecido.",
+            "forma": "P",
+            "lugar": "Dirección General de Aeronáutica Civil, calle Miguel Claro 1314, piso 6",
+            "comuna": "Providencia",
+            "fecha_inicio": "2021-07-15 15:30:00",
+            "fecha_termino": "2021-07-15 16:30:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/491132",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/144",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488845"
+        },
+        {
+            "id_audiencia": 488846,
+            "id_sujeto_pasivo": 454738,
+            "id_cargo": 307958,
+            "id_institucion": 211,
+            "nombres": "Ernesto",
+            "apellidos": "Ríos",
+            "cargo": "Director Regional de Aguas, Región Metropolitana ",
+            "nombre_institucion": "Dirección General de Aguas",
+            "referencia": "Resolución N°1054 de fecha 09 de agosto de 2021, en la que se Deniega Solicitud de Constitución de Derechos de Aprovechamiento de Aguas Subterráneas",
+            "forma": "V",
+            "lugar": "Audiencia lobby AM006AW1005061;  tema:  Resolución N°1054 de fecha 09 de agosto de 2021, en la que se Deniega Solicitud de Constitución de Derechos de Aprovechamiento de Aguas Subterráneas\nMartes, 14 de septiembre · 10:30 – 11:00am\nInformación para unirse",
+            "comuna": "Santiago Centro",
+            "fecha_inicio": "2021-09-14 10:30:00",
+            "fecha_termino": "2021-09-14 11:00:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/454738",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488846"
+        },
+        {
+            "id_audiencia": 488847,id_audiencia
+            "id_sujeto_pasivo": 454738, id_sujeto_pasivo
+            "id_cargo": 307958,id_cargo_pasivo
+            "id_institucion": 211, id_institucion
+            "nombres": "Ernesto", Nombres
+            "apellidos": "Ríos", Apellidos
+            "cargo": "Director Regional de Aguas, Región Metropolitana ", nombre_cargo
+            "nombre_institucion": "Dirección General de Aguas", nombre_institucion
+            "referencia": "-Cambio de titularidad del derecho de aprovechamiento de aguas de la Comunidad Pozo Profundo Isla de Rojas Interior a Asociación de Regantes y Agricultores Isla de Rojas Interior", Detalle_audiencia
+            "forma": "V",  Forma P:presencial V:Virtual
+            "lugar": "Audiencia Lobby AM006AW996209; tema: -Cambio de titularidad del derecho de aprovechamiento de aguas de la Comunidad Pozo Profundo Isla de Rojas Interior a Asociación de Regantes y Agricultores Isla de Rojas Interior\nMartes, 14 de septiembre · 10:00 – 10:3",
+            "comuna": "Santiago Centro",
+            "fecha_inicio": "2021-09-14 11:00:00",
+            "fecha_termino": "2021-09-14 11:30:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/454738",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488847"
+        },
+        {
+            "id_audiencia": 488848,Audiencia.id_audiencia
+            "id_sujeto_pasivo": 454738, id_sujeto_pasivo
+            "id_cargo": 307958, id_cargo_pasivo
+            "id_institucion": 211, id_institucion
+            "nombres": "Ernesto", Nombres
+            "apellidos": "Ríos", Apellidos
+            "cargo": "Director Regional de Aguas, Región Metropolitana ", cargo
+            "nombre_institucion": "Dirección General de Aguas", nombre_institucion
+            "referencia": "Seguimiento “proyecto “Obras de Modificación de Cauce Artificial del Canal Polpaico y Regulación de Cauce de Trece Quebradas Aportantes de la Quebrada Las Malvas”, Resolución D.G.A. R.M.S. (EXENTA) N°960 de 09/06/17 que lo aprueba, documentos que son parte del expediente VP-1301-2176", descripcion_audiencia
+            "forma": "V", Forma P:presencial V:Virtual
+            "lugar": "Audiencia lobby AM006AW1000069; tema:  Seguimiento “proyecto “Obras de Modificación de Cauce Artificial del Canal Polpaico y Regulación de Cauce de Trece Quebradas Aportantes de la Quebrada Las Malvas”, Resolución D.G.A. R.M.S. (EXENTA) N°960 de 09/06/17 ",  lugar
+            "comuna": "Santiago Centro", Comuna
+            "fecha_inicio": "2021-09-14 11:30:00", Fecha_Inicio_audiencia
+            "fecha_termino": "2021-09-14 12:00:00",Fecha_Termino_audiencia
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/454738",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488848"
+        },
+        {
+            "id_audiencia": 488849,
+            "id_sujeto_pasivo": 454738,
+            "id_cargo": 307958,
+            "id_institucion": 211,
+            "nombres": "Ernesto",
+            "apellidos": "Ríos",
+            "cargo": "Director Regional de Aguas, Región Metropolitana ",
+            "nombre_institucion": "Dirección General de Aguas",
+            "referencia": "Revisar y proponer plan de acción para dar curso a expediente de cambio de punto de captación VPC-1301-646",
+            "forma": "V",
+            "lugar": "Audiencia lobby AM006AW1000315; tema: Revisar y proponer plan de acción para dar curso a expediente de cambio de punto de captación VPC-1301-646\nMartes, 14 de septiembre · 12:00 – 12:30pm\nInformación para unirse a Google Meet\nEnlace a la videollamada: htt",
+            "comuna": "Santiago Centro",
+            "fecha_inicio": "2021-09-14 12:00:00",
+            "fecha_termino": "2021-09-14 12:30:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/454738",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488849"
+        },
+        {
+            "id_audiencia": 488850,
+            "id_sujeto_pasivo": 295660,
+            "id_cargo": 175252,
+            "id_institucion": 276,
+            "nombres": "Rosario",
+            "apellidos": "Pérez Izquierdo",
+            "cargo": "Secretaria Regional Ministerial Valparaíso",
+            "nombre_institucion": "Subsecretaría de Bienes Nacionales",
+            "referencia": "Solicitamos regularización terreno a al Club de Rodeo Los Laureles, sector medialina.",
+            "forma": "P",
+            "lugar": "SEREMI DE BIENES NACIONALES REGIÓN DE VALPARAÍSO.\nMELGAREJO 669, PISO 8",
+            "comuna": "Valparaíso",
+            "fecha_inicio": "2021-09-14 15:00:00",
+            "fecha_termino": "2021-09-14 15:30:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/295660",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/276",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488850"
+        },
+        {
+            "id_audiencia": 488851,
+            "id_sujeto_pasivo": 454738,
+            "id_cargo": 307958,
+            "id_institucion": 211,
+            "nombres": "Ernesto",
+            "apellidos": "Ríos",
+            "cargo": "Director Regional de Aguas, Región Metropolitana ",
+            "nombre_institucion": "Dirección General de Aguas",
+            "referencia": "Criterios relativos a la ejecución de medidas de fiscalización, ya sea impulsadas de oficio, denuncia, autodenuncia o que respondan a una determinación selectiva del Servicio",
+            "forma": "V",
+            "lugar": "Audiencia lobby AM006AW1000554; tema: Criterios relativos a la ejecución de medidas de fiscalización, ya sea impulsadas de oficio, denuncia, autodenuncia o que respondan a una determinación selectiva del Servicio\nMartes, 14 de septiembre · 12:30 – 1:00pm\n",
+            "comuna": "Santiago Centro",
+            "fecha_inicio": "2021-09-14 12:30:00",
+            "fecha_termino": "2021-09-14 13:00:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/454738",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488851"
+        },
+        {
+            "id_audiencia": 488852,
+            "id_sujeto_pasivo": 41965,
+            "id_cargo": 16743,
+            "id_institucion": 688,
+            "nombres": "Armando Nuncio",
+            "apellidos": "Sabaj Rojas",
+            "cargo": "Director(a) de Obras Municipales",
+            "nombre_institucion": "Municipalidad de San Antonio",
+            "referencia": "Desarrollo de Contrato MOP",
+            "forma": "V",
+            "lugar": "Ingresar al link:  http://meet.google.com/oxp-rbso-tbg",
+            "comuna": "San Antonio",
+            "fecha_inicio": "2021-09-14 12:30:00",
+            "fecha_termino": "2021-09-14 13:00:00",
+            "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/41965",
+            "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/688",
+            "detalles_url": "https://www.leylobby.gob.cl/api/v1/audiencias/488852"
+        }
+    ]
+}

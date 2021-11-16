@@ -1,0 +1,34 @@
+[
+    {
+        "id_cargo_pasivo": 307951, id_cargo_pasivo
+        "id_institucion": 211,id_institucion
+        "nombres": "Ernesto", nombres
+        "apellidos": "Ríos",Apellidos
+        "fecha_inicio": "2020-01-15",Fecha_Inicio_Trabajo
+        "fecha_termino": null, fecha_Termino_trabajo
+        "cargo": "Director(a) regional de servicio público", nombre_cargo
+        "nombre_institucion": "Dirección General de Aguas", nombre_institucion
+        "resolucion": "Resolución Exenta RA N° 116/25/2020\r\nENCOMIÉNDESE a:\r\nERNESTO JAVIER RÍOS RÍOS,  RUN N° 8882401-6 quien se desempeña como PROFESIONAL grado 5° de la planta de PROFESIONALES en el DIRECCION GENERAL DE AGUAS,  para ejercer funciones directivas de  DIRECTOR REGIONAL DE AGUAS METROPOLITANO a contar del  6 de enero de 2020.\r\n", resolucion
+        "resolucion_url": "",url_resolucion
+        "audiencias_url": "https://www.leylobby.gob.cl/api/v1/audiencias?cargo_pasivo=307951",
+        "viajes_url": "https://www.leylobby.gob.cl/api/v1/viajes?cargo_pasivo=307951",
+        "donativos_url": "https://www.leylobby.gob.cl/api/v1/donativos?cargo_pasivo=307951",
+        "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211"
+    },
+    {
+        "id_cargo_pasivo": 307958,
+        "id_institucion": 211,
+        "nombres": "Ernesto",
+        "apellidos": "Ríos",
+        "fecha_inicio": "2020-01-15",
+        "fecha_termino": null,
+        "cargo": "Director Regional de Aguas, Región Metropolitana ",
+        "nombre_institucion": "Dirección General de Aguas",
+        "resolucion": "Resolución Exenta RA N° 116/25/2020\r\n\r\nENCOMIÉNDESE a:\r\nERNESTO JAVIER RÍOS RÍOS,  RUN N° 8882401-6 quien se desempeña como PROFESIONAL grado 5° de la planta de PROFESIONALES en el DIRECCION GENERAL DE AGUAS,  para ejercer funciones directivas de  DIRECTOR REGIONAL DE AGUAS METROPOLITANO a contar del  6 de enero de 2020.\r\n",
+        "resolucion_url": "",
+        "audiencias_url": "https://www.leylobby.gob.cl/api/v1/audiencias?cargo_pasivo=307958",
+        "viajes_url": "https://www.leylobby.gob.cl/api/v1/viajes?cargo_pasivo=307958",
+        "donativos_url": "https://www.leylobby.gob.cl/api/v1/donativos?cargo_pasivo=307958",
+        "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211"
+    }
+]

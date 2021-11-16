@@ -18,7 +18,7 @@ def limpiar_texto(texto):
     texto=" ".join(texto.split())    
     texto =texto.replace('--', ' ').replace(': -', ':-').replace('**', ' ').replace('""', '"')#.replace('..', '.')  expresion regular
     texto=" ".join(texto.split())  
-    texto =texto.replace(' :', ': ').replace(' ,', ', ').replace(' .', '. ').replace(' "', '" ').replace('""', '').replace('( ', ' (').replace(' )', ') ').replace(' -', '-').replace('- ', '-')         
+    texto =texto.replace(' :', ': ').replace(' ,', ', ').replace(' .', '. ').replace(' "', '" ').replace('""', '').replace('( ', ' (').replace(' )', ') ').replace(' -', '-').replace('- ', '-').replace('• ', ' •')             
     texto=" ".join(texto.split())
     return quitar_tildes(texto)
 
@@ -143,10 +143,9 @@ def get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,h
     diferencia=segundos_espera-(time.time()-time_start)
     time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)
     #payload={} 
-    response,intentos=None,0
+    response,intentos,time_start=None,0,time.time()
     while response is None and intentos<=3:
-        try:
-            time_start=time.time()
+        try:            
             response =requests.get( url,headers=header,timeout=180,verify=verify)
             response.raise_for_status() 
         except:

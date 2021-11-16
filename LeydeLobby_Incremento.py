@@ -25,14 +25,11 @@ def total_caracteres(texto):
 
 #---------------------------------------
 class Persona:
-    _id_perfil=None  #string
-    _idsujeto=None #number    
+    _id_perfil=None  #string      
     _nombres=None
-    _apellidos=None
-    _id_cargoInstitucion=None
+    _apellidos=None    
     
-    def __init__(self,idsujeto,nombres,apellidos):
-        self._idsujeto=idsujeto
+    def __init__(self,nombres,apellidos):        
         if Funciones.es_vacio_o_nulo(nombres)is False:
             nombres=" ".join(nombres.title().split())
             self._nombres=Funciones.quitar_tildes(nombres)
@@ -42,14 +39,17 @@ class Persona:
 
 class Instituciones:
     _id_institucion=None
+    _cod_institucion=None
     _instituciones=[]
 
-    def getCodigo(self):
+    def get_codigo(self,id_institucion):
+        self._id_institucion=id_institucion
         cod=[ id[1] for id in self._instituciones if id[0]==self._id_institucion ]       
-        return cod[0] if len(cod)>0 else None
+        self._cod_institucion= cod[0] if len(cod)>0 else None
     
-class Cargo:
-    _id_cargoInstitucion=None
+
+class Cargo:   
+    _id_cargo_api=None 
     _cargo=None
     _resolucion=None
     _url_resolucion=None
@@ -57,17 +57,18 @@ class Cargo:
     _fecha_termino=None
     _list_cargos = []
 
+    def __init__(self,id_cargo_api,cargo):  
+        self_id_cargo_api= id_cargo_api                  
+        if Funciones.es_vacio_o_nulo(cargo)is False:
+            self._cargo=Funciones.limpiar_texto(cargo).title()
+
     def getValidarCargo(self):
         for carg in self._list_cargos:          
-            if carg[0]==self._id_cargoInstitucion and Funciones.es_vacio_o_nulo(carg[1])is False:
+            if carg[0]==self._id_cargo_institucion and Funciones.es_vacio_o_nulo(carg[1])is False:
                 return True
         return False      
     
-    def __init__(self,id_cargo_institucion,cargo,resolucion,url_resolucion,fecha_inicio,fecha_termino):       
-        self._id_cargoInstitucion=id_cargo_institucion
-       
-        if Funciones.es_vacio_o_nulo(cargo)is False:
-            self._cargo=Funciones.limpiar_texto(cargo).title()
+    def rellenar_campos(self,resolucion,url_resolucion,fecha_inicio,fecha_termino):
         if Funciones.es_vacio_o_nulo(resolucion)is False:
             resolucion=Funciones.limpiar_texto(resolucion).capitalize()
             self._resolucion=total_caracteres(resolucion)            
@@ -77,6 +78,8 @@ class Cargo:
             self._fecha_inicio=Funciones.stringafecha(fecha_inicio)
         if Funciones.es_vacio_o_nulo(fecha_termino)is False:
             self._fecha_termino=Funciones.stringafecha(fecha_termino)
+    
+        
             
             
 class Audiencia:
@@ -87,14 +90,14 @@ class Audiencia:
     _url_info_lobby='https://www.infolobby.cl/Ficha/Audiencia/'
     _url_ley_lobby='https://www.leylobby.gob.cl/instituciones/'
     _fecha_inicio=None
-    _fechaTermino=None
+    _fecha_termino=None
         
-    def __init__(self,id_audiencia,lugar,observacion,ubicacion,fecha_inicio,fechaTermino):
+    def __init__(self,id_audiencia,lugar,observacion,ubicacion,fecha_inicio,fecha_termino):
         self._id_audiencia=id_audiencia 
         if Funciones.es_vacio_o_nulo(fecha_inicio)is False and fecha_inicio.isnumeric() is False:
             self._fecha_inicio=Funciones.stringafechatiempo(fecha_inicio)
-        if Funciones.es_vacio_o_nulo(fechaTermino)is False and fechaTermino.isnumeric() is False:     
-            self._fechaTermino=Funciones.stringafechatiempo(fechaTermino)
+        if Funciones.es_vacio_o_nulo(fecha_termino)is False and fecha_termino.isnumeric() is False:     
+            self._fecha_termino=Funciones.stringafechatiempo(fecha_termino)
         if Funciones.es_vacio_o_nulo(ubicacion)is False and ubicacion.isnumeric() is False:   #Comuna
             self._ubicacion=Funciones.limpiar_texto(ubicacion).title()
         if Funciones.es_vacio_o_nulo(lugar)is False and lugar.isnumeric() is False :
@@ -172,69 +175,49 @@ while True:
 
         #Loop audiencias por page        
         for audiencia in list_audiencias_api["data"]:
-
-            #Load Audiencia
-            obj_audiencia=Audiencia(audiencia["id_audiencia"],audiencia['lugar'],audiencia['referencia'],audiencia['comuna'],audiencia['fecha_inicio'],audiencia['fecha_termino'])   #(self,id_audiencia,lugar,observacion,ubicacion,id_cargo):
-            
-            #Load Institucion
-            obj_institucion._id_institucion=audiencia['id_institucion']
-            cod_institucion = obj_institucion.getCodigo()
+                        
+            #Load Institucion            
+            obj_institucion.get_codigo(audiencia['id_institucion'])
 
             #Si institucion no existe entonces Insert Institucion
-            if cod_institucion is None:
+            if obj_institucion._cod_institucion  is None:
                 url=Funciones.url_build_ley_lobby("Instituciones",obj_institucion._id_institucion)                         
                 institucion,cantidad_total_de_peticiones_establecidos_en_la_API,time_start=Funciones.get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header,False,2)
-                cod_institucion = institucion["codigo"]
+                obj_institucion._cod_institucion = institucion["codigo"]
                 #Load a lista instituciones
-                obj_institucion._instituciones.append([obj_institucion._id_institucion,institucion["codigo"]])
+                obj_institucion._instituciones.append([obj_institucion._id_institucion,obj_institucion._cod_institucion])
                 #Insert data
                 storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Institucion_sp] ?,?,?;"
-                params= (obj_institucion._id_institucion,institucion["codigo"],institucion["nombre"])   
+                params= (obj_institucion._id_institucion,obj_institucion._cod_institucion,institucion["nombre"].strip())   
                 crsr.execute(storeProcedure,params)            
 
-            #Load Cargo Pasivo            
-            obj_persona_pasiva=Persona(audiencia["id_sujeto_pasivo"],audiencia['nombres'],audiencia['apellidos'])    #(self,perfil,nombres,apellidos):   
-            obj_persona_pasiva._id_cargoInstitucion=audiencia['id_cargo']
+            #Load Persona Pasiva
+            obj_persona_pasiva=Persona(audiencia['nombres'],audiencia['apellidos'])    #(self,nombres,apellidos): audiencia["id_sujeto_pasivo"]  
+            obj_persona_pasiva._id_sujeto_pasivo_api=audiencia["id_sujeto_pasivo"]
 
+            #Load Cargo_Pasivo
+            obj_cargo=Cargo(audiencia['id_cargo'],audiencia["cargo"]) 
+            
             #Insert Persona Pasiva            
-            storeProcedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?;"
-            params= (obj_persona_pasiva._idsujeto,'Pasivo',obj_persona_pasiva._nombres,obj_persona_pasiva._apellidos)
+            storeProcedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?;"
+            params= (obj_persona_pasiva._nombres,obj_persona_pasiva._apellidos,'Pasivo',obj_persona_pasiva._id_sujeto_pasivo_api,obj_cargo._nombre,obj_institucion._id_institucion)
             crsr.execute(storeProcedure,params)
             obj_persona_pasiva._id_perfil=crsr.fetchval()
-
-            obj_persona_pasiva._id_perfil_cargo_institucion=f'{obj_persona_pasiva._id_perfil}-{obj_persona_pasiva._id_cargoInstitucion}' 
-           
             
-            url=Funciones.url_build_ley_lobby("Cargos_Pasivos",obj_persona_pasiva._idsujeto)              
-            list_cargos_pasivos_api,cantidad_total_de_peticiones_establecidos_en_la_API,time_start=Funciones.get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header,False,2)
-            #Search and Insert todos los cargos de Persona Pasiva
-            for cargo_pasivo in list_cargos_pasivos_api:    
-                objCargo=Cargo(cargo_pasivo["id_cargo_pasivo"],cargo_pasivo["cargo"],cargo_pasivo["resolucion"],cargo_pasivo["resolucion_url"],cargo_pasivo["fecha_inicio"],cargo_pasivo["fecha_termino"])   
-                #List Cargoinstituciones --------------------------------------------------
-                if len(objCargo._list_cargos) == 0:
-                    statement='SELECT IHC.Id_Institucion_Cargo,PHC.Id_Perfil_Cargo FROM Ley_Lobby.dbo.Institucion_Has_Cargo IHC left join Ley_Lobby.dbo.Perfil_Has_Cargo PHC on IHC.Id_Institucion_Cargo= PHC.Id_Institucion_Cargo where PHC.Id_Perfil =?'
-                    crsr.execute(statement,[obj_persona_pasiva._id_perfil])
-                    objCargo._list_cargos = crsr.fetchall()
-                if objCargo.getValidarCargo() is False:
-                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Institucion_Has_Cargo_sp] ?,?,?,?,?,?,?;"
-                    crsr.execute(storeProcedure,[objCargo._id_cargoInstitucion,cargo_pasivo["id_institucion"],objCargo._fecha_inicio,objCargo._fecha_termino,objCargo._cargo,objCargo._resolucion,objCargo._url_resolucion])
-                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Cargo_sp] ?,?;"
-                    #obj_persona_pasiva._id_perfil_cargo_institucion  Internamente, en el Store Procedure, se crea el _id_perfil_cargo_institucion
-                    crsr.execute(storeProcedure,[obj_persona_pasiva._id_perfil,objCargo._id_cargoInstitucion])  
-                
-
             #Create url's infoLobby & LeyLobby     
-            obj_audiencia.url_build_web(cod_institucion,obj_persona_pasiva._id_cargoInstitucion)                   
-            
-            
+            obj_audiencia.url_build_web(obj_institucion._cod_institucion,obj_persona_pasiva._id_sujeto_pasivo_api)                   
+
             #Detalle de Audiencia e Insert           
             url=Funciones.url_build_ley_lobby("Audiencia",obj_audiencia._id_audiencia) 
             detalle_audiencia,cantidad_total_de_peticiones_establecidos_en_la_API,time_start=Funciones.get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header,False,2)           
             
+            #Load Audiencia
+            obj_audiencia=Audiencia(audiencia["id_audiencia"],audiencia['lugar'],detalle_audiencia['referencia'],audiencia['comuna'],audiencia['fecha_inicio'],audiencia['fecha_termino'])   #(self,id_audiencia,lugar,observacion,ubicacion,id_cargo):
+            
             storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_sp] ?,?,?,?,?,?,?,?,?;"
-            crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_audiencia._fecha_inicio,obj_audiencia._fechaTermino,obj_audiencia._lugar,detalle_audiencia['forma'],obj_audiencia._observacion,obj_audiencia._ubicacion,obj_audiencia._url_info_lobby,obj_audiencia._url_ley_lobby])             
+            crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_audiencia._fecha_inicio,obj_audiencia._fecha_termino,obj_audiencia._lugar,detalle_audiencia['forma'],obj_audiencia._observacion,obj_audiencia._ubicacion,obj_audiencia._url_info_lobby,obj_audiencia._url_ley_lobby])             
             storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?;"
-            crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil_cargo_institucion,'Principal']) 
+            crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil,'Principal']) 
 
             #Insert Materias
             for materia in detalle_audiencia['materias']:
@@ -245,12 +228,10 @@ while True:
             
             #Insert Cargos Activos,
             for cargo_activo in detalle_audiencia['asistentes']:
-                obj_persona_activa= Persona(cargo_activo['id_cargo_activo'],cargo_activo['nombres'],cargo_activo['apellidos'])                  
+                obj_persona_activa= Persona(cargo_activo['nombres'],cargo_activo['apellidos'])                  
                 storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?"                
-                crsr.execute(storeProcedure,[obj_persona_activa._idsujeto,'Activo',obj_persona_activa._nombres,obj_persona_activa._apellidos])                
-                obj_persona_activa._id_perfil=crsr.fetchval()                
-                storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Cargo_sp] ?,?;"
-                crsr.execute(storeProcedure,[obj_persona_activa._id_perfil,None])  
+                crsr.execute(storeProcedure,[obj_persona_activa._nombres,obj_persona_activa._apellidos,'Activo',None,None,None])                
+                obj_persona_activa._id_perfil=crsr.fetchval()
                 storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?;"
                 crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,None])
 
@@ -266,6 +247,23 @@ while True:
                         crsr.execute(storeProcedure,[obj_persona_activa._id_perfil,obj_entidad._id_Entidad])                          
             
                 #insert_perfil_institucion('369-P',259, '2014-11-26',null,'Integrante de Comisión Evaluadora formada en el marco de la Ley N° 19886','','http://documentos.minvu.cl/min_vivienda/resoluciones_exentas/Documents/res%20ex%20electronica%20783.pdf');          
+
+            url=Funciones.url_build_ley_lobby("Cargos_Pasivos",obj_persona_pasiva._id_sujeto_pasivo_api)              
+            list_cargos_pasivos_api,cantidad_total_de_peticiones_establecidos_en_la_API,time_start=Funciones.get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header,False,2)
+            #Search and Insert todos los cargos de Persona Pasiva
+            for cargo_pasivo in list_cargos_pasivos_api:    
+                obj_cargo=Cargo(cargo_pasivo["id_cargo_pasivo"],cargo_pasivo["cargo"],cargo_pasivo["resolucion"],cargo_pasivo["resolucion_url"],cargo_pasivo["fecha_inicio"],cargo_pasivo["fecha_termino"])   
+                #List Cargoinstituciones --------------------------------------------------
+                if len(obj_cargo._list_cargos) == 0:
+                    statement='SELECT IHC.Id_Institucion_Cargo,PHC.Id_Perfil_Cargo FROM Ley_Lobby.dbo.Institucion_Has_Cargo IHC left join Ley_Lobby.dbo.Perfil_Has_Cargo PHC on IHC.Id_Institucion_Cargo= PHC.Id_Institucion_Cargo where PHC.Id_Perfil =?'
+                    crsr.execute(statement,[obj_persona_pasiva._id_perfil])
+                    obj_cargo._list_cargos = crsr.fetchall()
+                if obj_cargo.getValidarCargo() is False:
+                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Institucion_Has_Cargo_sp] ?,?,?,?,?,?,?;"
+                    crsr.execute(storeProcedure,[obj_cargo._id_cargo_institucion,cargo_pasivo["id_institucion"],obj_cargo._fecha_inicio,obj_cargo._fecha_termino,obj_cargo._cargo,obj_cargo._resolucion,obj_cargo._url_resolucion])
+                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Cargo_sp] ?,?;"
+                    #obj_persona_pasiva._id_perfil  Internamente, en el Store Procedure, se crea el _id_perfil
+                    crsr.execute(storeProcedure,[obj_persona_pasiva._id_perfil,obj_cargo._id_cargo_institucion])  
     except Exception as exception:
         print(exception) 
         traceback.print_exc()    
