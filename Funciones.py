@@ -94,6 +94,12 @@ def separar_nombres_y_apellidos(nombre_completo):
             nombres=' '.join(lista_nombre_completo[0:cantidad_palabras-2])
         elif cantidad_palabras >=6:
             nombres=' '.join(lista_nombre_completo)
+    if apellidos is not None:          
+        if apellidos.find(nombres)!= -1 or len(apellidos.split())>3:
+            apellidos=' '.join(apellidos.replace(nombres,"").split())  
+            list_de_apellidos=apellidos.split()      
+            apellidos=' '.join([apellido for n,apellido in enumerate(list_de_apellidos) if apellido not in list_de_apellidos[:n]])
+            
     return nombres.title(),apellidos.title() if apellidos is not None else None
 
 def buscar_identificador_licitacion_en_texto(texto):
@@ -137,7 +143,7 @@ def url_build_ley_lobby(nombre_consulta,parametro):
         url+="cargos-pasivos/"
     if nombre_consulta=="Instituciones":
         url+="instituciones/"    
-    return url+parametro
+    return f'{url}{parametro}'
 
 def get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header={},verify=True,segundos_espera=5): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
     diferencia=segundos_espera-(time.time()-time_start)
