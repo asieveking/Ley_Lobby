@@ -50,58 +50,6 @@ def es_vacio_o_nulo(valor):
         return True #True si valor es NULO
     return False  #False si valor contiene una letra o numero
 
-def separar_nombres_y_apellidos(nombre_completo):
-    nombre_completo=' '.join(nombre_completo.upper().split())    
-    lista_nombre_completo=nombre_completo.split()
-    cantidad_palabras=len(lista_nombre_completo) 
-    apellidos=nombres=None   
-             
-    if nombre_completo.find(" DE LAS ")!= -1:        
-        indice_palabra_de=lista_nombre_completo.index("DE")
-        print(indice_palabra_de)
-        if cantidad_palabras>=5 and indice_palabra_de>1 :
-            indice_palabra_de-=1    
-        nombres=' '.join(lista_nombre_completo[0:indice_palabra_de])
-        apellidos=' '.join(lista_nombre_completo[indice_palabra_de:cantidad_palabras]) 
-    elif nombre_completo.find(" SAN ")!= -1:
-        indice_palabra_san=lista_nombre_completo.index("SAN")
-        if cantidad_palabras==4 and indice_palabra_san>1  or cantidad_palabras==5 and indice_palabra_san>2 :
-            indice_palabra_san-=1 
-        nombres=' '.join(lista_nombre_completo[0:indice_palabra_san])
-        apellidos=' '.join(lista_nombre_completo[indice_palabra_san:cantidad_palabras]) 
-    elif nombre_completo.find(" DEL ")!=-1:
-        indice_palabra=lista_nombre_completo.index("DEL")
-        print(indice_palabra)
-        if indice_palabra==2 and cantidad_palabras==4 or indice_palabra ==3 and cantidad_palabras==5:
-            indice_palabra-=1 
-        elif indice_palabra==1 and cantidad_palabras>=5:
-            indice_palabra+=2
-        nombres=' '.join(lista_nombre_completo[0:indice_palabra])
-        apellidos=' '.join(lista_nombre_completo[indice_palabra:cantidad_palabras])    
-    elif  nombre_completo.find("@")!= -1:
-        nombre_email=nombre_completo.split("@")[0]  
-        if nombre_email.find(".")!= -1:
-            nombres,apellidos=nombre_email.split(".")    
-    lista_coincidencias=[item for item in lista_nombre_completo if item in ["DE","LAS","UNIDAD","JEFE"] ]   
-    if nombres is None: 
-        if len(lista_coincidencias)>0 or cantidad_palabras==1:
-            nombres=' '.join(lista_nombre_completo)
-        elif cantidad_palabras ==2:      
-            nombres=' '.join(lista_nombre_completo[0:1]) 
-            apellidos=' '.join(lista_nombre_completo[1:])      
-        elif cantidad_palabras >2 and cantidad_palabras<=5:    
-            apellidos=' '.join(lista_nombre_completo[cantidad_palabras-2:cantidad_palabras])        
-            nombres=' '.join(lista_nombre_completo[0:cantidad_palabras-2])
-        elif cantidad_palabras >=6:
-            nombres=' '.join(lista_nombre_completo)
-    if apellidos is not None:          
-        if apellidos.find(nombres)!= -1 or len(apellidos.split())>3:
-            apellidos=' '.join(apellidos.replace(nombres,"").split())  
-            list_de_apellidos=apellidos.split()      
-            apellidos=' '.join([apellido for n,apellido in enumerate(list_de_apellidos) if apellido not in list_de_apellidos[:n]])
-            
-    return nombres.title(),apellidos.title() if apellidos is not None else None
-
 def buscar_identificador_licitacion_en_texto(texto):
     try:
         return re.search("[\d]+\-[\d]+\-[A-Z]{1,2}[\d]{1,3}", texto).group(0).upper()
@@ -133,7 +81,7 @@ def dar_formato_al_rut(rut):
 
 
 
-def url_build_ley_lobby(nombre_consulta,parametro):
+def url_build_ley_lobby(nombre_consulta):
     url="https://www.leylobby.gob.cl/api/v1/"
     if nombre_consulta=="Audiencias_Page":
         url+="audiencias?page="
@@ -143,9 +91,9 @@ def url_build_ley_lobby(nombre_consulta,parametro):
         url+="cargos-pasivos/"
     if nombre_consulta=="Instituciones":
         url+="instituciones/"    
-    return f'{url}{parametro}'
+    return url+'{}'
 
-def get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header={},verify=True,segundos_espera=5): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
+def get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header={},verify=True,segundos_espera=3): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
     diferencia=segundos_espera-(time.time()-time_start)
     time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)
     #payload={} 
