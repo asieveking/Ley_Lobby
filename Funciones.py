@@ -71,7 +71,7 @@ def email_es_valido(email):
     return False
 
 def dar_formato_al_rut(rut):  
-    rut=rut.upper().strip()       
+    rut=rut.upper().replace(" ","")       
     if True if rut.find("-")!=-1 and rut.find(".")!=-1 else False:
         return rut 
     else: 
@@ -93,21 +93,19 @@ def url_build_ley_lobby(nombre_consulta):
         url+="instituciones/"    
     return url+'{}'
 
-def get_api(url,time_start,cantidad_total_de_peticiones_establecidos_en_la_API,header={},verify=True,segundos_espera=3): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
+def get_request_api(url,time_start,header={},verify=True,segundos_espera=2): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
     diferencia=segundos_espera-(time.time()-time_start)
-    time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)
-    #payload={} 
-    response,intentos,time_start=None,0,time.time()
-    while response is None and intentos<=3:
-        try:            
-            response =requests.get( url,headers=header,timeout=180,verify=verify)
-            response.raise_for_status() 
-        except:
-            response=None
-            time.sleep(30)
-        finally:
-            intentos+=1         
-    return response.json() if response else None, cantidad_total_de_peticiones_establecidos_en_la_API-intentos,time_start
+    time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)wwwwwwww
+    #payload,headers ={},{}  
+    json,flag,time_start=None,True,time.time()    
+    try:            
+        with requests.get( url,headers=header, timeout=180,verify=verify) as response:            
+            # print(f'{response} and {response.text}')  
+            json=response.json()            
+            assert response.status_code==200        
+    except:
+        flag=False                   
+    return json,time_start,flag
 
 def get_url_scrappy(url,segundos_espera=15):
     source,intento=None,3    
