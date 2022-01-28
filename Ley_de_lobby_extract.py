@@ -1,6 +1,7 @@
 
 import Funciones,SQL_Conection 
 import datetime, time,traceback
+from dateutil import tz
 
 
 #---------------------------------------
@@ -127,7 +128,7 @@ class Entidad:
             else:
                 self._rut=rut.replace(" ","") #identenficador para entranjeros ejemplo: "Hemasoft Software SL" id B82874173 orden de compra 956-1388-SE18
                 self._rut_es_valido=0
-        if Funciones.es_vacio_o_nulo(nombre)is False and nombre.isnumeric() is False:
+        if Funciones.es_vacio_o_nulo(nombre)is False and nombre.isnumeric() is False and len(nombre)>=5:
             self._nombre=Funciones.limpiar_texto(nombre).upper()
         if Funciones.es_vacio_o_nulo(giro)is False and giro.isnumeric() is False:
             self._giro=Funciones.limpiar_texto(giro).title()
@@ -148,8 +149,41 @@ class Materia:
     def __init__(self,nombre):
         if  Funciones.es_vacio_o_nulo(nombre)is False:  
             self._nombre=Funciones.limpiar_texto(nombre)
+
+
+class HoraChile():        
+    _hora_inicio_extraccion=None
+    _hora_final_extraccion=None        
+    _utc_chile=None
+
+    def __init__(self):
+        self._utc_chile= tz.gettz('America/Santiago')#https://nodatime.org/TimeZones
+        datetime_chile=datetime.datetime.now(self._utc_chile).replace(tzinfo=None)       
+        
+        #hora,minuto,segundo=self._datetime_chile.hour,self._datetime_chile.minute, self._datetime_chile.second
+        self._hora_inicio_extraccion = datetime_chile.replace(hour=20,minute=00,second=0,microsecond=0)+datetime.timedelta(days=-1 if datetime_chile.time() <= datetime.time(8,0,0,0) and datetime_chile.time() >= datetime.time.min else 0)# Hora Oficial Entre 22:00 a 07:00 hrs. Restriccion horaria para extraer desde la API
+        self._hora_final_extraccion = datetime_chile.replace(hour=8,minute=00,second=0,microsecond=0)+datetime.timedelta(days=1 if datetime_chile.time() >= datetime.time(8,0,0,1) and datetime_chile.time() <= datetime.time.max else 0)#hora Oficial       
+        
+    def calcular_si_hora_de_extraccion_es_valida(self):                
+        return datetime.datetime.now(self._utc_chile).replace(tzinfo=None) < self._hora_inicio_extraccion  
+
+    def calcular_si_fecha_actual_es_menor_a_la_hora_final_de_extraccion(self,fecha_extraccion):
+        return  datetime.datetime.now(self._utc_chile).replace(tzinfo=None) < self._hora_final_extraccion  and fecha_extraccion.date() < datetime.datetime.now(self._utc_chile).date()
+
+    def reconstruir_hora_de_chile(self):
+        return datetime.datetime.now(self._utc_chile).replace(tzinfo=None)   
+    
+    def calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion(self):
+        return datetime.datetime.now(self._utc_chile).replace(tzinfo=None) > self._hora_final_extraccion
 #---------------------------------------
+obj_hora_chile=HoraChile()
+if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
+    diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile._hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
+    print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile._hora_inicio_extraccion.time()} hasta las {obj_hora_chile._hora_final_extraccion.time()}, Horario de Chile')     
+    time.sleep(diferencia_entre_hora_inicio_extraccion_y_hora_chile.total_seconds()+1) 
+
 id_audiencia=None
+
 try:
     time_start=time.time()
     header= {'Api-Key':'$2y$10$KjpEayK8CvOywKuM2zW3x.BF1oZ1uyv8MpOHtywhDa8', 'content-type':'application/json'}
@@ -163,7 +197,7 @@ try:
         #Num_page INCREMENTO
         statement ='SELECT Page_Incremento FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
         crsr.execute(statement,["Audiencia"])
-        num_page =crsr.fetchval()
+        num_page =crsr.fetchval()-2
 
         cantidad_total_de_peticiones_establecidos_en_la_API=8000
         
@@ -177,6 +211,7 @@ try:
             cantidad_total_de_peticiones_establecidos_en_la_API-=1
             #Loop audiencias por page        
             for audiencia in list_audiencias_api["data"]:
+                start_performance=time.time() 
                 id_audiencia=audiencia["id_audiencia"]
 
                 #Load Persona Pasiva
@@ -249,11 +284,11 @@ try:
                 #En el caso de que el registro no este dentro de la lista "list_cargos_pasivos_api"... Entonces, buscarlo dentro de la "list_cargos_pasivos_db"
                 if obj_persona_pasiva._id_perfil is None:
                     if cod_institucion is None:
-                        obj_institucion.get_codigo(cargo_pasivo["id_institucion"] )
+                        obj_institucion.get_codigo(audiencia["id_institucion"] )
                     else:
                         obj_institucion._id_institucion,obj_institucion._cod_institucion=audiencia["id_institucion"],cod_institucion
                     
-                    obj_persona_pasiva._id_perfil=[cargo[0] for cargo in list_cargos_pasivos_db if obj_institucion._id_institucion==cargo[1] and cargo[2]==audiencia['id_cargo']][0]
+                    obj_persona_pasiva._id_perfil=next(cargo[0] for cargo in list_cargos_pasivos_db if obj_institucion._id_institucion==cargo[1] and cargo[2]==audiencia['id_cargo'])
                 
                 #Load Audiencia
                 obj_audiencia=Audiencia(audiencia["id_audiencia"],audiencia['lugar'],audiencia['referencia'],audiencia['comuna'],audiencia['fecha_inicio'],audiencia['fecha_termino'])   #(self,id_audiencia,lugar,observacion,ubicacion,id_cargo):
@@ -277,7 +312,7 @@ try:
                     if obj_materia._nombre is not None:
                         storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_Has_Materia_sp] ?,?;"
                         crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_materia._nombre])                 
-
+                
                 #Insert Cargos Activos,
                 for cargo_activo in detalle_audiencia['asistentes']:
                     obj_persona_activa= Persona(cargo_activo['nombres'],cargo_activo['apellidos'])                  
@@ -295,8 +330,12 @@ try:
                         crsr.execute(storeProcedure,[obj_entidad._rut,obj_entidad._rut_es_valido,obj_entidad._nombre,obj_entidad._giro,obj_entidad._representante,obj_entidad._directorio,representa['pais'],obj_entidad._domicilio,obj_entidad._naturaleza])
                         obj_entidad._id_Entidad= crsr.fetchval()                     
                         storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Entidad_sp] ?,?;"
-                        crsr.execute(storeProcedure,[obj_persona_activa._id_perfil,obj_entidad._id_Entidad])                          
-                          
+                        crsr.execute(storeProcedure,[obj_persona_activa._id_perfil,obj_entidad._id_Entidad])    
+                
+                print(f'id_audiencia: {id_audiencia} - cantidad de cargos activos: {len( detalle_audiencia["asistentes"] )} - cantidad de tiempo: {time.time()-start_performance}')          
+                
+                if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion():
+                    break
             if num_page>list_audiencias_api["last_page"]:  
                 print('todo ok')      
                 break 
