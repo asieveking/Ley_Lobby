@@ -175,14 +175,27 @@ class HoraChile():
     
     def calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion(self):
         return datetime.datetime.now(self._utc_chile).replace(tzinfo=None) > self._hora_final_extraccion
+
+class Num_Page:
+    _num_page_incremento:int
+    _num_page_decremento:int
+    _num_page_limit:int
+    _num_page:int
+
+    def __init__(self,num_page_incremento,num_page_decremento,num_page_limit):
+        self._num_page=self._num_page_incremento=num_page_incremento-2
+        self._num_page_decremento=num_page_decremento+3
+        self._num_page_limit=num_page_limit
+        
+        
 #---------------------------------------
 obj_hora_chile=HoraChile()
-if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
+if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida() is False:
     diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile._hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
     print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile._hora_inicio_extraccion.time()} hasta las {obj_hora_chile._hora_final_extraccion.time()}, Horario de Chile')     
     time.sleep(diferencia_entre_hora_inicio_extraccion_y_hora_chile.total_seconds()+1) 
 
-id_audiencia=None
+id_audiencia=num_page=None
 
 try:
     time_start=time.time()
@@ -195,10 +208,12 @@ try:
         obj_institucion._instituciones = crsr.fetchall()
 
         #Num_page INCREMENTO
-        statement ='SELECT Page_Incremento FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
-        crsr.execute(statement,["Audiencia"])
-        num_page =crsr.fetchval()-2
+        statement ='SELECT Page_Incremento,Page_Decremento,Page_Limit FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
+        list_num_page=crsr.execute(statement,["Audiencia"]).fetchall()[0]        
+        obj_num_page = Num_Page(*list_num_page)
 
+        num_page=obj_num_page._num_page
+        
         cantidad_total_de_peticiones_establecidos_en_la_API=8000
         
         url_api_list_page=Funciones.url_build_ley_lobby("Audiencias_Page") 
@@ -207,7 +222,7 @@ try:
         url_api_audiencia=Funciones.url_build_ley_lobby("Audiencias")
         
         while True:  
-            list_audiencias_api,time_start,flag=Funciones.get_request_api(url_api_list_page.format(num_page),time_start,header )
+            list_audiencias_api,time_start,flag=Funciones.get_request_api(url_api_list_page.format(obj_num_page._num_page),time_start,header )
             cantidad_total_de_peticiones_establecidos_en_la_API-=1
             #Loop audiencias por page        
             for audiencia in list_audiencias_api["data"]:
@@ -217,7 +232,6 @@ try:
                 #Load Persona Pasiva
                 obj_persona_pasiva=Persona(audiencia['nombres'],audiencia['apellidos'])    #(self,nombres,apellidos): audiencia["id_sujeto_pasivo"]  
                 obj_persona_pasiva._id_sujeto_pasivo_api=audiencia["id_sujeto_pasivo"]  
-
                 
                 #List Cargo_instituciones por id de sujeto Pasivo                                   
                 statement='SELECT P.Id_Perfil,P.Id_Institucion,DP.Cod_Cargo_API,DP.Fecha_Inicio_Cargo,DP.Fecha_Termino_Cargo,DP.Id_Resolucion,DP.Id_Url_Resolucion FROM [Ley_Lobby].[dbo].PERFIL P LEFT JOIN [Ley_Lobby].[dbo].DETALLE_PERFIL DP ON P.Id_Perfil=DP.id_Detalle_Perfil  WHERE Id_Sujeto_Pasivo_API=?'
@@ -336,14 +350,22 @@ try:
                 
                 if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion():
                     break
-            if num_page>list_audiencias_api["last_page"]:  
-                print('todo ok')      
-                break 
-            else:
-                num_page += 1         
+            # if obj_num_page._num_page_limit<=obj_num_page._num_page:
+            #     break
+            if obj_num_page._num_page_incremento<list_audiencias_api["last_page"]: 
+                obj_num_page._num_page_incremento+=1 
+                num_page= obj_num_page._num_page = obj_num_page._num_page_incremento 
                 statement = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_INCREMENTO=?  WHERE Area_Num_Page=?'
-                crsr.execute(statement,[num_page,"AUDIENCIA"])
-
+                crsr.execute(statement,[obj_num_page._num_page,"AUDIENCIA"])  
+            elif obj_num_page._num_page_decremento> obj_num_page._num_page_limit:
+                obj_num_page._num_page_decremento -=1
+                num_page = obj_num_page._num_page= obj_num_page._num_page_decremento 
+                statement = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_DECREMENTO=?  WHERE Area_Num_Page=?'
+                crsr.execute(statement,[obj_num_page._num_page,"AUDIENCIA"]) 
+            elif obj_num_page._num_page_incremento>=list_audiencias_api["last_page"] and obj_num_page._num_page_decremento<= obj_num_page._num_page_limit:
+                break
+                       
+                
 except Exception as exception:
     print(exception) 
     traceback.print_exc()    
