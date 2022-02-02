@@ -158,7 +158,7 @@ class HoraChile():
 
     def __init__(self):
         self._utc_chile= tz.gettz('America/Santiago')#https://nodatime.org/TimeZones
-        datetime_chile=datetime.datetime.now(self._utc_chile).replace(tzinfo=None)       
+        datetime_chile=self.reconstruir_hora_de_chile()      
         
         #hora,minuto,segundo=self._datetime_chile.hour,self._datetime_chile.minute, self._datetime_chile.second
         self._hora_inicio_extraccion = datetime_chile.replace(hour=20,minute=00,second=0,microsecond=0)+datetime.timedelta(days=-1 if datetime_chile.time() <= datetime.time(8,0,0,0) and datetime_chile.time() >= datetime.time.min else 0)# Hora Oficial Entre 22:00 a 07:00 hrs. Restriccion horaria para extraer desde la API
@@ -184,13 +184,13 @@ class Num_Page:
 
     def __init__(self,num_page_incremento,num_page_decremento,num_page_limit):
         self._num_page=self._num_page_incremento=num_page_incremento-2
-        self._num_page_decremento=num_page_decremento+3
+        self._num_page_decremento=num_page_decremento if num_page_limit ==num_page_decremento else  num_page_decremento+3
         self._num_page_limit=num_page_limit
         
         
 #---------------------------------------
 obj_hora_chile=HoraChile()
-if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida() is False:
+if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
     diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile._hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
     print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile._hora_inicio_extraccion.time()} hasta las {obj_hora_chile._hora_final_extraccion.time()}, Horario de Chile')     
     time.sleep(diferencia_entre_hora_inicio_extraccion_y_hora_chile.total_seconds()+1) 
@@ -348,7 +348,7 @@ try:
                 
                 print(f'id_audiencia: {id_audiencia} - cantidad de cargos activos: {len( detalle_audiencia["asistentes"] )} - cantidad de tiempo: {time.time()-start_performance}')          
                 
-                if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion():
+                if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==True:
                     break
             # if obj_num_page._num_page_limit<=obj_num_page._num_page:
             #     break
@@ -364,7 +364,7 @@ try:
                 crsr.execute(statement,[obj_num_page._num_page,"AUDIENCIA"]) 
             elif obj_num_page._num_page_incremento>=list_audiencias_api["last_page"] and obj_num_page._num_page_decremento<= obj_num_page._num_page_limit:
                 break
-                       
+            print(num_page)           
                 
 except Exception as exception:
     print(exception) 
