@@ -16,12 +16,14 @@ class Persona:
     _apellidos=None    
     
     def __init__(self,nombres,apellidos):        
-        if Funciones.es_vacio_o_nulo(nombres)is False:
-            nombres=" ".join(nombres.title().split())
-            self._nombres=Funciones.quitar_tildes(nombres)
-        if Funciones.es_vacio_o_nulo(apellidos)is False:    
-            apellidos=" ".join(apellidos.title().split())
-            self._apellidos=Funciones.quitar_tildes(apellidos)
+        if Funciones.es_vacio_o_nulo(nombres)is False:            
+            nombres=Funciones.quitar_tildes(nombres)
+            nombres="".join( [caracter if caracter.isalpha() is True else " " for caracter in nombres ])
+            self._nombres=" ".join(nombres.split()).title()            
+        if Funciones.es_vacio_o_nulo(apellidos)is False:  
+            apellidos=Funciones.quitar_tildes(apellidos)
+            apellidos="".join( [caracter if caracter.isalpha() is True else " " for caracter in apellidos])
+            self._apellidos=" ".join(apellidos.split()).title()
 
 class Instituciones:
     _id_institucion=None
@@ -48,17 +50,21 @@ class Cargo:
         self._list_identificadores_vinculados =[]
         self._list_cargos_db=[]
         self._id_cargo_api= id_cargo_api                  
-        if Funciones.es_vacio_o_nulo(nombre_cargo)is False:
-            self._nombre_cargo=Funciones.limpiar_texto(nombre_cargo).title()
+        if Funciones.es_vacio_o_nulo(nombre_cargo)is False and any(char.isalpha() for char in nombre_cargo):
+            nombre_cargo=Funciones.limpiar_texto(nombre_cargo)
+            while nombre_cargo[-1:].isalnum()==False:
+                nombre_cargo=nombre_cargo[:-1]           
+            self._nombre_cargo=Funciones.limpiar_nombre(nombre_cargo).title()            
             self.licitacion_relacionada_dentro_de_texto(self._nombre_cargo)
-    #TODO quitar cantidad de caracteres
+   
     def rellenar_campos(self,resolucion,url_resolucion,fecha_inicio,fecha_termino):
         if Funciones.es_vacio_o_nulo(resolucion)is False:
             resolucion=Funciones.limpiar_texto(resolucion).capitalize()
             self.licitacion_relacionada_dentro_de_texto(resolucion.upper())
+            #TODO quitar cantidad de caracteres
             self._resolucion=total_caracteres(resolucion)            
         if Funciones.es_vacio_o_nulo(url_resolucion)is False:
-            self._url_resolucion=url_resolucion.strip()
+            self._url_resolucion="".join(url_resolucion.split())
         if Funciones.es_vacio_o_nulo(fecha_inicio)is False :
             # self._fecha_inicio=Funciones.stringafecha(fecha_inicio)
             self._fecha_inicio=fecha_inicio
@@ -122,14 +128,20 @@ class Entidad:
 
     def __init__(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):        
         if Funciones.es_vacio_o_nulo(rut)is False and len(rut)>=5: 
-            if len(rut)>=7 and len(rut) <=12 and rut.replace(".","").replace("-","").replace(" ","")[:-1].isnumeric() is True:                
+            rut=rut.replace(".","").replace(" ","")
+            if len(rut)>=9 and len(rut)<=11  and rut[-2:-1]=='-' and rut[:-2].isnumeric() is True:                
                 self._rut=Funciones.dar_formato_al_rut(rut) #Formato para el rut chileno  
                 self._rut_es_valido=1            
             else:
-                self._rut=rut.replace(" ","") #identenficador para entranjeros ejemplo: "Hemasoft Software SL" id B82874173 orden de compra 956-1388-SE18
+                self._rut=rut.replace("-","") #identenficador para entranjeros ejemplo: "Hemasoft Software SL" id B82874173 orden de compra 956-1388-SE18
                 self._rut_es_valido=0
-        if Funciones.es_vacio_o_nulo(nombre)is False and nombre.isnumeric() is False and len(nombre)>=5:
-            self._nombre=Funciones.limpiar_texto(nombre).upper()
+        if Funciones.es_vacio_o_nulo(nombre)is False and any(char.isalpha() for char in nombre) and len(nombre)>=5:
+            nombre=Funciones.limpiar_texto(nombre).upper()            
+            nombre=Funciones.limpiar_nombre(nombre)  
+            while nombre[-1:].isalpha()==False:
+                nombre=nombre[:-1]           
+            self._nombre=" ".join([palabra for  palabra in nombre.split() if palabra not in ["SA","LTDA","LIMITADA"]]).replace(" SOCIEDAD ANONIMA","")           
+            
         if Funciones.es_vacio_o_nulo(giro)is False and giro.isnumeric() is False:
             self._giro=Funciones.limpiar_texto(giro).title()
         if Funciones.es_vacio_o_nulo(representante)is False and representante.isnumeric() is False:
@@ -190,7 +202,7 @@ class Num_Page:
         
 #---------------------------------------
 obj_hora_chile=HoraChile()
-if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
+if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida() is False:
     diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile._hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
     print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile._hora_inicio_extraccion.time()} hasta las {obj_hora_chile._hora_final_extraccion.time()}, Horario de Chile')     
     time.sleep(diferencia_entre_hora_inicio_extraccion_y_hora_chile.total_seconds()+1) 
@@ -317,8 +329,8 @@ try:
                 #Detalle de Audiencia INSERT   
                 storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_sp] ?,?,?,?,?,?,?,?,?;"
                 crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_audiencia._fecha_inicio,obj_audiencia._fecha_termino,obj_audiencia._lugar,detalle_audiencia['forma'],obj_audiencia._observacion,obj_audiencia._ubicacion,obj_audiencia._url_info_lobby,obj_audiencia._url_ley_lobby])             
-                storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?;"
-                crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil,'Principal']) #Existen reuniones donde hay mas de dos integrantes que son pasivos (empleados publicos). Estos, solo estan en visibles en la direccion url (Pagina WEB) pero no dentro de la respuesta de la API
+                storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?;"
+                crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil,None,'Principal']) #Existen reuniones donde hay mas de dos integrantes que son pasivos (empleados publicos). Estos, solo estan en visibles en la direccion url (Pagina WEB) pero no dentro de la respuesta de la API
                 
                 #Insert Materias
                 for materia in detalle_audiencia['materias']:
@@ -333,19 +345,19 @@ try:
                     storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?;"                
                     crsr.execute(storeProcedure,[obj_persona_activa._nombres,obj_persona_activa._apellidos,'Activo',None,None,None])                
                     obj_persona_activa._id_perfil=crsr.fetchval()
-                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?;"
-                    crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,None])
-
+                    
+                    id_entidad=None
                     #Insert Empresa/Entidad del Persona Activo
                     if 'rut_representado' in cargo_activo['representa']:
                         representa=cargo_activo['representa']
                         obj_entidad=Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
                         storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
                         crsr.execute(storeProcedure,[obj_entidad._rut,obj_entidad._rut_es_valido,obj_entidad._nombre,obj_entidad._giro,obj_entidad._representante,obj_entidad._directorio,representa['pais'],obj_entidad._domicilio,obj_entidad._naturaleza])
-                        obj_entidad._id_Entidad= crsr.fetchval()                     
-                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Entidad_sp] ?,?;"
-                        crsr.execute(storeProcedure,[obj_persona_activa._id_perfil,obj_entidad._id_Entidad])    
-                
+                        id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
+
+                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?;"
+                    crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,id_entidad,None])
+
                 print(f'id_audiencia: {id_audiencia} - cantidad de cargos activos: {len( detalle_audiencia["asistentes"] )} - cantidad de tiempo: {time.time()-start_performance}')          
                 
                 if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==True:

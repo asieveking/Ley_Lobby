@@ -9,16 +9,20 @@ from bs4 import BeautifulSoup
 
 
 def quitar_tildes(texto):
-    a,b = 'áéíóúüÁÉÍÓÚÜ','aeiouuAEIOUU'
+    a,b = 'àáèéìíòóùúüÀÁÈÉÌÍÒÓÙÚÜ','aaeeiioouuuAAEEIIOOUUU'
     trans = str.maketrans(a,b)
     return texto.translate(trans).strip() 
+
+def limpiar_nombre(texto):
+    return "".join([caracter for caracter in texto if caracter not in ['?','¿','"',"'",".",',',":"]])
+    
 
 def limpiar_texto(texto): 
     texto=html.unescape(texto)     
     texto=" ".join(texto.split())    
-    texto =texto.replace('--', ' ').replace(': -', ':-').replace('**', ' ').replace('""', '"')#.replace('..', '.')  expresion regular
+    texto =texto.replace('--', ' ').replace(': -', ':-').replace('**', ' ').replace('""', '"').replace('.,', '.').replace('Nº','Nº ')
     texto=" ".join(texto.split())  
-    texto =texto.replace(' :', ': ').replace(' ,', ', ').replace(' .', '. ').replace(' "', '" ').replace('""', '').replace('( ', ' (').replace(' )', ') ').replace(' -', '-').replace('- ', '-').replace('• ', ' •')             
+    texto =texto.replace(' :', ': ').replace(' ,', ', ').replace(' .', '. ').replace(' "', '" ').replace('""', '').replace('( ', ' (').replace(' )', ') ').replace(' -', '-').replace('- ', '-').replace('• ', ' •')                   
     texto=" ".join(texto.split())
     return quitar_tildes(texto)
 
