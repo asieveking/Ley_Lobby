@@ -137,10 +137,10 @@ class Entidad:
                 self._rut_es_valido=0
         if Funciones.es_vacio_o_nulo(nombre)is False and any(char.isalpha() for char in nombre) and len(nombre)>=5:
             nombre=Funciones.limpiar_texto(nombre).upper()            
-            nombre=Funciones.limpiar_nombre(nombre)  
+            nombre=Funciones.limpiar_nombre(nombre).replace(" SOCIEDAD ANONIMA","").replace("LTDA","")   
             while nombre[-1:].isalpha()==False:
                 nombre=nombre[:-1]           
-            self._nombre=" ".join([palabra for  palabra in nombre.split() if palabra not in ["SA","LTDA","LIMITADA"]]).replace(" SOCIEDAD ANONIMA","")           
+            self._nombre=" ".join([palabra for  palabra in nombre.split() if palabra not in ["SA","LIMITADA"]])         
             
         if Funciones.es_vacio_o_nulo(giro)is False and giro.isnumeric() is False:
             self._giro=Funciones.limpiar_texto(giro).title()
@@ -202,7 +202,7 @@ class Num_Page:
         
 #---------------------------------------
 obj_hora_chile=HoraChile()
-if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida() is False:
+if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
     diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile._hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
     print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile._hora_inicio_extraccion.time()} hasta las {obj_hora_chile._hora_final_extraccion.time()}, Horario de Chile')     
     time.sleep(diferencia_entre_hora_inicio_extraccion_y_hora_chile.total_seconds()+1) 

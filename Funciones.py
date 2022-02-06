@@ -20,7 +20,7 @@ def limpiar_nombre(texto):
 def limpiar_texto(texto): 
     texto=html.unescape(texto)     
     texto=" ".join(texto.split())    
-    texto =texto.replace('--', ' ').replace(': -', ':-').replace('**', ' ').replace('""', '"').replace('.,', '.').replace('Nº','Nº ')
+    texto =texto.replace('--', ' ').replace(': -', ':-').replace('**', ' ').replace('""', '"').replace('.,', '.').replace('Nº','Nº ').replace('/ ','/').replace(' /','/')
     texto=" ".join(texto.split())  
     texto =texto.replace(' :', ': ').replace(' ,', ', ').replace(' .', '. ').replace(' "', '" ').replace('""', '').replace('( ', ' (').replace(' )', ') ').replace(' -', '-').replace('- ', '-').replace('• ', ' •')                   
     texto=" ".join(texto.split())
@@ -106,9 +106,12 @@ def get_request_api(url,time_start,header={},verify=True,segundos_espera=2): #5 
         with requests.get( url,headers=header, timeout=180,verify=verify) as response:            
             # print(f'{response} and {response.text}')  
             json=response.json()            
-            assert response.status_code==200        
-    except:
-        flag=False                   
+            assert response.status_code==200 
+    except requests.ConnectionError:
+        time.sleep(30)     
+    except Exception:
+        flag=False  
+    
     return json,time_start,flag
 
 def get_url_scrappy(url,segundos_espera=15):
