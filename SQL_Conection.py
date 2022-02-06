@@ -27,8 +27,4 @@ class SQLServer:
         #     self._db_connection.close()
         self._db_cursor.close()
         self._db_connection.close()
-
-    def closeConnection(self):
-        
-       self._db_cursor.close()
-       self._db_connection.close()
+    
