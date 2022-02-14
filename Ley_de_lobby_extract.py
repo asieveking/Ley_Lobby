@@ -229,7 +229,7 @@ def main():
             url_api_list_instituciones=Funciones.url_build_ley_lobby("Instituciones") 
             url_api_audiencia=Funciones.url_build_ley_lobby("Audiencias")
             
-            while True:  
+            while obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==False:  
                 list_audiencias_api,time_start,flag=Funciones.get_request_api(url_api_list_page.format(obj_num_page._num_page),time_start,header )
                 cantidad_total_de_peticiones_establecidos_en_la_API-=1
                 #Loop audiencias por page        
