@@ -113,8 +113,8 @@ def get_request_api(url,time_start,header={},verify=True,segundos_espera=2): #5 
                 # print(f'{response} and {response.text}')  
                 json=response.json()            
                 assert response.status_code==200 and json is not None
-        except requests.ConnectionError or requests.ReadTimeout:
-            time.sleep(30)     
+        except requests.exceptions.ConnectionError or requests.exceptions.ReadTimeout:
+            time.sleep(30)             
         except Exception:
             flag=False 
         else:
