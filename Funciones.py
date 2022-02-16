@@ -24,6 +24,10 @@ def limpiar_texto(texto):
     texto=" ".join(texto.split())  
     texto =texto.replace(' :', ': ').replace(' ,', ', ').replace(' .', '. ').replace(' "', '" ').replace('""', '').replace('( ', ' (').replace(' )', ') ').replace(' -', '-').replace('- ', '-').replace('• ', ' •')                   
     texto=" ".join(texto.split())
+    while texto[-1:].isalnum()==False:
+        texto=texto[:-1]
+    while texto[:1].isalnum()==False: 
+        texto=texto[1:]   
     return quitar_tildes(texto)
 
 def quitar_puntos(texto):         
@@ -98,19 +102,23 @@ def url_build_ley_lobby(nombre_consulta):
     return url+'{}'
 
 def get_request_api(url,time_start,header={},verify=True,segundos_espera=2): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
-    diferencia=segundos_espera-(time.time()-time_start)
-    time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)wwwwwwww
-    #payload,headers ={},{}  
-    json,flag,time_start=None,True,time.time()    
-    try:            
-        with requests.get( url,headers=header, timeout=180,verify=verify) as response:            
-            # print(f'{response} and {response.text}')  
-            json=response.json()            
-            assert response.status_code==200 
-    except requests.ConnectionError:
-        time.sleep(30)     
-    except Exception:
-        flag=False  
+    flag_loop=True
+    while flag_loop:
+        diferencia=segundos_espera-(time.time()-time_start)
+        time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)wwwwwwww
+        #payload,headers ={},{}  
+        json,flag,time_start=None,True,time.time()    
+        try:            
+            with requests.get( url,headers=header, timeout=180,verify=verify) as response:            
+                # print(f'{response} and {response.text}')  
+                json=response.json()            
+                assert response.status_code==200 and json is not None
+        except requests.exceptions.ConnectionError or requests.exceptions.ReadTimeout:
+            time.sleep(30)             
+        except Exception:
+            flag=False 
+        else:
+            flag_loop=False
     
     return json,time_start,flag
 
