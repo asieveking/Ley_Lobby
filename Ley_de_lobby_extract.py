@@ -284,8 +284,8 @@ def main():
                             crsr.execute(storeProcedure,params)    
 
                         #Insert Persona Pasiva            
-                        storeProcedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?;"
-                        params= (obj_persona_pasiva._nombres,obj_persona_pasiva._apellidos,'Pasivo',obj_persona_pasiva._id_sujeto_pasivo_api,obj_cargo._nombre_cargo,obj_institucion._id_institucion)
+                        storeProcedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?,?;"
+                        params= (obj_persona_pasiva._nombres,obj_persona_pasiva._apellidos,'Pasivo',obj_persona_pasiva._id_sujeto_pasivo_api,obj_cargo._nombre_cargo,obj_institucion._id_institucion,obj_cargo._id_cargo_api)
                         crsr.execute(storeProcedure,params)
                         id_perfil_temp=crsr.fetchval() 
                         
@@ -295,8 +295,8 @@ def main():
                             cod_institucion=obj_institucion._cod_institucion
 
                         #Insert Detalle Persona Pasiva   
-                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Detalle_Perfil_sp] ?,?,?,?,?,?;"
-                        crsr.execute(storeProcedure,[id_perfil_temp,obj_cargo._fecha_inicio,obj_cargo._fecha_termino,obj_cargo._resolucion,obj_cargo._url_resolucion,obj_cargo._id_cargo_api])
+                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Detalle_Perfil_sp] ?,?,?,?,?;"
+                        crsr.execute(storeProcedure,[id_perfil_temp,obj_cargo._fecha_inicio,obj_cargo._fecha_termino,obj_cargo._resolucion,obj_cargo._url_resolucion])
                         
                         #Insertar identificadores vinculadas Id_OC and Id_Licitacion
                         if len(obj_cargo._list_identificadores_vinculados)>0:   
