@@ -120,11 +120,11 @@ class Entidad:
     _nombre=None    
     _giro=None
     _domicilio=None
-    _representante=None
+    _representante_directorio=None
     _naturaleza=None
     _directorio=None    
 
-    def __init__(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):        
+    def __init__(self,rut,nombre,giro,domicilio,representante_directorio,naturaleza,directorio):        
         if Funciones.es_vacio_o_nulo(rut)is False and len(rut)>=5: 
             rut=rut.replace(".","").replace(" ","")
             if len(rut)>=9 and len(rut)<=10  and rut[-2:-1]=='-' and rut[:-2].isnumeric() is True:                
@@ -140,9 +140,9 @@ class Entidad:
             
         if Funciones.es_vacio_o_nulo(giro)is False and giro.isnumeric() is False and any(char.isalpha() for char in giro) :
             self._giro=Funciones.limpiar_texto(giro).title()
-        if Funciones.es_vacio_o_nulo(representante)is False and any(char.isalpha() for char in representante) :
-            representante=Funciones.limpiar_texto(representante)
-            self._representante=Funciones.quitar_puntos(representante).title()
+        if Funciones.es_vacio_o_nulo(representante_directorio)is False and any(char.isalpha() for char in representante_directorio) :
+            representante_directorio=Funciones.limpiar_texto(representante_directorio)
+            self._representante_directorio=Funciones.quitar_puntos(representante_directorio).title()
         if Funciones.es_vacio_o_nulo(naturaleza)is False and any(char.isalpha() for char in naturaleza):
             self._naturaleza=Funciones.limpiar_texto(naturaleza).title()
         if Funciones.es_vacio_o_nulo(domicilio)is False and any(char.isalpha() for char in domicilio):
@@ -348,7 +348,7 @@ def main():
                         if 'rut_representado' in cargo_activo['representa']:                              
                             obj_entidad=Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
                             storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
-                            crsr.execute(storeProcedure,[obj_entidad._rut,obj_entidad._rut_es_valido,obj_entidad._nombre,obj_entidad._giro,obj_entidad._representante,obj_entidad._directorio,representa['pais'],obj_entidad._domicilio,obj_entidad._naturaleza])
+                            crsr.execute(storeProcedure,[obj_entidad._rut,obj_entidad._rut_es_valido,obj_entidad._nombre,obj_entidad._giro,obj_entidad._representante_directorio,obj_entidad._directorio,representa['pais'],obj_entidad._domicilio,obj_entidad._naturaleza])
                             id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
                         else:
                             nombre=representa['nombre']
