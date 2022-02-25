@@ -323,8 +323,8 @@ def main():
                     #Detalle de Audiencia INSERT   
                     storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_sp] ?,?,?,?,?,?,?,?,?;"
                     crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_audiencia._fecha_inicio,obj_audiencia._fecha_termino,obj_audiencia._lugar,detalle_audiencia['forma'],obj_audiencia._observacion,obj_audiencia._ubicacion,obj_audiencia._url_info_lobby,obj_audiencia._url_ley_lobby])             
-                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?;"
-                    crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil,None,'Principal']) #Existen reuniones donde hay mas de dos integrantes que son pasivos (empleados publicos). Estos, solo estan en visibles en la direccion url (Pagina WEB) pero no dentro de la respuesta de la API
+                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?,?;"
+                    crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil,None,None,'Principal']) #Existen reuniones donde hay mas de dos integrantes que son pasivos (empleados publicos). Estos, solo estan en visibles en la direccion url (Pagina WEB) pero no dentro de la respuesta de la API
                     
                     #Insert Materias
                     for materia in detalle_audiencia['materias']:
@@ -340,17 +340,28 @@ def main():
                         crsr.execute(storeProcedure,[obj_persona_activa._nombres,obj_persona_activa._apellidos,'Activo',None,None,None])                
                         obj_persona_activa._id_perfil=crsr.fetchval()
                         
-                        id_entidad=None
+                        id_entidad=nombre_representa=None
+                        representa=cargo_activo['representa']
+                        list_nombres_representa,list_nombres_persona=[],[]  
+
                         #Insert Empresa/Entidad del Persona Activo
-                        if 'rut_representado' in cargo_activo['representa']:
-                            representa=cargo_activo['representa']
+                        if 'rut_representado' in cargo_activo['representa']:                              
                             obj_entidad=Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
                             storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
                             crsr.execute(storeProcedure,[obj_entidad._rut,obj_entidad._rut_es_valido,obj_entidad._nombre,obj_entidad._giro,obj_entidad._representante,obj_entidad._directorio,representa['pais'],obj_entidad._domicilio,obj_entidad._naturaleza])
                             id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
+                        else:
+                            nombre=representa['nombre']
+                            if Funciones.es_vacio_o_nulo(nombre)is False and any(char.isalpha() for char in nombre) and len(nombre)>=3:
+                                nombre_representa=Funciones.limpiar_texto(nombre)          
+                                nombre_representa=Funciones.limpiar_nombre(nombre_representa).title()
+                                list_nombres_representa=nombre_representa.split()
+                                list_nombres_persona=obj_persona_activa._nombres.split()+obj_persona_activa._apellidos.split()
+                                if any(nombre for nombre in  list_nombres_persona if nombre in list_nombres_representa ):
+                                    nombre_representa=None    
                         
-                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?;"
-                        crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,id_entidad,None])                        
+                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?,?;"
+                        crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,id_entidad,nombre_representa,None])
 
                     print(f'id_audiencia: {id_audiencia} - cantidad de cargos activos: {len( detalle_audiencia["asistentes"] )} - cantidad de tiempo: {time.time()-start_performance}')          
                     
