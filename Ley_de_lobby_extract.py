@@ -75,7 +75,7 @@ class Cargo:
             identificador=Funciones.buscar_identificador_licitacion_en_texto(texto)        
             if identificador is not None:
                 cod_identificador=identificador.split("-")[2][:2]
-                if identificador not in self._list_identificadores_vinculados and cod_identificador not in ["PC","CL"]:                
+                if identificador not in self._list_identificadores_vinculados and cod_identificador not in ["PC","CL","IQ","IN"]:                
                     self._list_identificadores_vinculados.append(identificador)                   
                 texto= texto.replace(identificador,"")
             else:
@@ -242,7 +242,7 @@ def main():
                     obj_persona_pasiva._id_sujeto_pasivo_api=audiencia["id_sujeto_pasivo"]  
                     
                     #List Cargo_instituciones por id de sujeto Pasivo                                   
-                    statement='SELECT P.Id_Perfil,P.Id_Institucion,DP.Cod_Cargo_API,DP.Fecha_Inicio_Cargo,DP.Fecha_Termino_Cargo,DP.Id_Resolucion,DP.Id_Url_Resolucion FROM [Ley_Lobby].[dbo].PERFIL P LEFT JOIN [Ley_Lobby].[dbo].DETALLE_PERFIL DP ON P.Id_Perfil=DP.id_Detalle_Perfil  WHERE Id_Sujeto_Pasivo_API=?'
+                    statement='SELECT P.Id_Perfil,P.Id_Institucion,P.Id_Cargo_API,DP.Fecha_Inicio_Cargo,DP.Fecha_Termino_Cargo,DP.Id_Resolucion,DP.Id_Url_Resolucion FROM [Ley_Lobby].[dbo].PERFIL P LEFT JOIN [Ley_Lobby].[dbo].DETALLE_PERFIL DP ON P.Id_Perfil=DP.id_Detalle_Perfil  WHERE Id_Sujeto_Pasivo_API=?'
                     crsr.execute(statement,(obj_persona_pasiva._id_sujeto_pasivo_api))
                     list_cargos_pasivos_db=[]
                     list_cargos_pasivos_db = crsr.fetchall()
@@ -255,14 +255,12 @@ def main():
                     #Search and Insert todos los cargos de Persona Pasiva
                     for cargo_pasivo in list_cargos_pasivos_api: 
 
-                        flag_exist = [True for cargo_pasivo_db in list_cargos_pasivos_db  if cargo_pasivo["id_institucion"]==cargo_pasivo_db[1] 
+                        if any(True for cargo_pasivo_db in list_cargos_pasivos_db  if cargo_pasivo["id_institucion"]==cargo_pasivo_db[1] 
                         and cargo_pasivo["id_cargo_pasivo"]==cargo_pasivo_db[2] and cargo_pasivo["fecha_inicio"]==cargo_pasivo_db[3]
                         and cargo_pasivo["fecha_termino"]==cargo_pasivo_db[4] and (Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion"]) is False and cargo_pasivo_db[5] is not None
                         or Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion"]) is True and cargo_pasivo_db[5] is None )
                         and (Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is False and cargo_pasivo_db[6] is not None 
-                        or Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is True and cargo_pasivo_db[6] is None ) ]   
-
-                        if len(flag_exist)>0:
+                        or Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is True and cargo_pasivo_db[6] is None ) ):                        
                             continue
                         
                         obj_cargo=Cargo(cargo_pasivo["id_cargo_pasivo"],cargo_pasivo["cargo"])   
@@ -352,8 +350,7 @@ def main():
                             id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
                         
                         storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?;"
-                        crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,id_entidad,None])
-                        
+                        crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,id_entidad,None])                        
 
                     print(f'id_audiencia: {id_audiencia} - cantidad de cargos activos: {len( detalle_audiencia["asistentes"] )} - cantidad de tiempo: {time.time()-start_performance}')          
                     
