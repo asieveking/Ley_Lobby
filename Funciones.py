@@ -1,23 +1,38 @@
+import requests
+import datetime
+import time
 import re
 import html
-import datetime, time
+
 #!pip install ntplib
 import ntplib
-import requests
 #!pip install beautifulsoup4
 from bs4 import BeautifulSoup
 
 
-def quitar_tildes(texto):
-    a,b = 'àáèéìíòóùúüÀÁÈÉÌÍÒÓÙÚÜ','aaeeiioouuuAAEEIIOOUUU'
-    trans = str.maketrans(a,b)
-    return texto.translate(trans).strip() 
+def transcripcion_simbolos_vocales(texto:str):
+    """_summary_
 
-def limpiar_nombre(texto):
+    Args:
+        texto (str): Transcripcion de vocales con simbolos a el cual les cambiares a vocales normales (sin simbolos)
+        
+
+    Returns:
+        str: retorna el valor sin tildes ni simbolos en las vocales   
+             
+        EXAMPLE: (input): Pingüino (output): Pinguino
+        
+        De: (àáèéìíòóùúüÀÁÈÉÌÍÒÓÙÚÜ) A: aaeeiioouuuAAEEIIOOUUU
+    """
+    a,b = 'àáèéìíòóùúüÀÁÈÉÌÍÒÓÙÚÜ','aaeeiioouuuAAEEIIOOUUU'
+    transcription = str.maketrans(a,b)
+    return texto.translate(transcription).strip() 
+
+def limpiar_nombre(texto:str):
     return "".join([caracter for caracter in texto if caracter not in ['?','¿','"',"'",".",',',":"]])
     
 
-def limpiar_texto(texto): 
+def limpiar_texto(texto:str): 
     texto=html.unescape(texto)     
     texto=" ".join(texto.split())    
     texto =texto.replace('--', ' ').replace(': -', ':-').replace('**', ' ').replace('""', '"').replace('.,', '.').replace('Nº','Nº ').replace('/ ','/').replace(' /','/')
@@ -28,24 +43,24 @@ def limpiar_texto(texto):
         texto=texto[:-1]
     while texto[:1].isalnum()==False: 
         texto=texto[1:]   
-    return quitar_tildes(texto)
+    return transcripcion_simbolos_vocales(texto)
 
-def quitar_puntos(texto):         
+def quitar_puntos(texto:str):         
     return texto.replace('.','').strip() 
     
-def total_caracteres(texto):
-    return texto[:4790]
+def total_caracteres(texto:str):
+    return texto[:5000]
 
-def stringafecha(fecha):
+def stringafecha(fecha:str):
     return datetime.datetime.strptime(fecha,'%Y-%m-%d')
 
-def stringafechatiempo(fecha):
+def stringafechatiempo(fecha:str):
     return datetime.datetime.strptime(fecha,'%Y-%m-%d %H:%M:%S')    
 
-def limpiarstringfechatiempo(fecha):
+def limpiarstringfechatiempo(fecha:str):
     return fecha.split('.')[0].replace("T"," ")
 
-def stringafloat(texto): #TODO Este metodo puede ser mejorado a uno por expresion regular
+def stringafloat(texto:str): #TODO Este metodo puede ser mejorado a uno por expresion regular
     texto= texto.replace("UF","").replace("$","").replace("US","").replace("D","").replace("EUR","")
     return float(texto.replace(".","").replace(",",".") if texto.find(",")!=-1 else texto.replace(".",""))
 
@@ -58,27 +73,27 @@ def es_vacio_o_nulo(valor):
         return True #True si valor es NULO
     return False  #False si valor contiene una letra o numero
 
-def buscar_identificador_licitacion_en_texto(texto):
+def buscar_identificador_licitacion_en_texto(texto:str):
     try:
         return re.search("[\d]+\-[\d]+\-[A-Z]{1,2}[\d]{1,3}", texto).group(0).upper()
         
     except:
         return None
 
-def buscar_rut_en_texto(texto): #Precaucion!!! el return de datos jamas debe ser modificado (Upper -Lower) debido a que un metodo, relacionado al scrappy, necesita el rut sin modificar para luego limpiar el nombre del proveedor quitandole el rut encontrado. Ejemplo 11195673-k ASTRO QUIMICA ( rut debe ser respetado y nunca debe modificarse como retorno de este metodo)
+def buscar_rut_en_texto(texto:str): #Precaucion!!! el return de datos jamas debe ser modificado (Upper -Lower) debido a que un metodo, relacionado al scrappy, necesita el rut sin modificar para luego limpiar el nombre del proveedor quitandole el rut encontrado. Ejemplo 11195673-k ASTRO QUIMICA ( rut debe ser respetado y nunca debe modificarse como retorno de este metodo)
     try:        
         return re.search("[\d]{7,8}\-[\w]|[\d]{1,2}\.[\d]{3}\.[\d]{3}\-[\w]|[\d]{7,8}[\w]", texto).group(0)
     except:
         return None
 
-def email_es_valido(email):
+def email_es_valido(email:str):
   try: 
     re.search("^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$|[\w]+\@[a-zA-Z0-9]+\.[a-zA-Z]{2,3}|^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$", email).group(0)
     return True
   except:
     return False
 
-def dar_formato_al_rut(rut):  
+def dar_formato_al_rut(rut:str):  
     rut=rut.upper().replace(" ","")       
     if True if rut.find("-")!=-1 and rut.find(".")!=-1 else False:
         return rut 
@@ -87,21 +102,7 @@ def dar_formato_al_rut(rut):
         largo=len(rut)
         return f'{rut[0:largo-7]}.{rut[largo-7:largo-4]}.{rut[largo-4:-1]}-{rut[-1:]}'
 
-
-
-def url_build_ley_lobby(nombre_consulta):
-    url="https://www.leylobby.gob.cl/api/v1/"
-    if nombre_consulta=="Audiencias_Page":
-        url+="audiencias?page="
-    if nombre_consulta=="Audiencias":
-        url+="audiencias/"
-    if nombre_consulta=="Cargos_Pasivos":
-        url+="cargos-pasivos/"
-    if nombre_consulta=="Instituciones":
-        url+="instituciones/"    
-    return url+'{}'
-
-def get_request_api(url,time_start,header={},verify=True,segundos_espera=2): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
+def get_request_api(url:str,time_start:time,header:dict={},verify:bool=True,segundos_espera:int=2): #5 segundos de espera por defecto. Si disminuye este valor a menos de 5, la consulta falla.
     flag_loop=True
     while flag_loop:
         diferencia=segundos_espera-(time.time()-time_start)
@@ -122,32 +123,32 @@ def get_request_api(url,time_start,header={},verify=True,segundos_espera=2): #5 
     
     return json,time_start,flag
 
-def get_url_scrappy(url,segundos_espera=15):
-    source,intento=None,3    
-    time.sleep(segundos_espera)
-    while source is None and intento>0:
-        try:
-            source= requests.get(url, timeout=120)
-            source.raise_for_status()                                             
-        except:
-            source=None
-            time.sleep(100)
-        finally:
-            intento-=1
-    return BeautifulSoup(source.text, 'lxml') if source  else None   
+# def get_url_scrappy(url:str,segundos_espera:int=15):
+#     source,intento=None,3    
+#     time.sleep(segundos_espera)
+#     while source is None and intento>0:
+#         try:
+#             source= requests.get(url, timeout=120)
+#             source.raise_for_status()                                             
+#         except:
+#             source=None
+#             time.sleep(100)
+#         finally:
+#             intento-=1
+#     return BeautifulSoup(source.text, 'lxml') if source  else None   
 
-def hora_chile():
-    response,intento= None,3 
-    c = ntplib.NTPClient()
-    while response is None and intento>0:
-        try:            
-            response = c.request('ntp.shoa.cl',timeout=60)           
-        except:
-            time.sleep(5)
-        finally:
-            if response is None:
-                intento-=1
-    return datetime.datetime.fromtimestamp(response.dest_time) if response is not None else None 
+# def hora_chile():
+#     response,intento= None,3 
+#     c = ntplib.NTPClient()
+#     while response is None and intento>0:
+#         try:            
+#             response = c.request('ntp.shoa.cl',timeout=60)           
+#         except:
+#             time.sleep(5)
+#         finally:
+#             if response is None:
+#                 intento-=1
+#     return datetime.datetime.fromtimestamp(response.dest_time) if response is not None else None 
 
 
 
