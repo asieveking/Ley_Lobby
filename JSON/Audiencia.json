@@ -1,0 +1,77 @@
+{
+    "id_audiencia": 488848,
+    "id_cargo_pasivo": 307958,
+    "id_institucion": 211, 
+    "nombres": "Ernesto", 
+    "apellidos": "Ríos",  
+    "cargo": "Director Regional de Aguas, Región Metropolitana ", 
+    "referencia": "Seguimiento “proyecto “Obras de Modificación de Cauce Artificial del Canal Polpaico y Regulación de Cauce de Trece Quebradas Aportantes de la Quebrada Las Malvas”, Resolución D.G.A. R.M.S. (EXENTA) N°960 de 09/06/17 que lo aprueba, documentos que son parte del expediente VP-1301-2176",
+    "forma": "V", 
+    "lugar": "Audiencia lobby AM006AW1000069; tema:  Seguimiento “proyecto “Obras de Modificación de Cauce Artificial del Canal Polpaico y Regulación de Cauce de Trece Quebradas Aportantes de la Quebrada Las Malvas”, Resolución D.G.A. R.M.S. (EXENTA) N°960 de 09/06/17 ", 
+    "comuna": "Santiago Centro", 
+    "fecha_inicio": "2021-09-14 11:30:00",
+    "fecha_termino": "2021-09-14 12:00:00",
+    "sujeto_pasivo_url": "https://www.leylobby.gob.cl/api/v1/cargos-pasivos/307958",
+    "institucion_url": "https://www.leylobby.gob.cl/api/v1/instituciones/211",
+    "asistentes": [
+        {
+            "id_audiencia": 488848,
+            "id_cargo_activo": 42936,
+            "nombres": "Oscar Gerardo",
+            "apellidos": "Uribe Bravo",
+            "cargo_activo_url": "https://www.leylobby.gob.cl/api/v1/cargos-activos/42936",
+            "representa": {
+                "rut_representado": "76.378.017-1",
+                "nombre": "Santiago Solar S.A.",
+                "tipo": "persona_juridica",
+                "pais": "CHL", 
+                "giro": "Generación en Otras Centrales",
+                "domicilio": "Generación de Energía", 
+                "representante_legal": "Juan José Gana",
+                "naturaleza": "Sociedad Anónima",
+                "directorio": "Juan José Gana\nClara Bowman" 
+            }
+        },
+        {
+            "id_audiencia": 488848,
+            "id_cargo_activo": 60876,
+            "nombres": "Ximena",
+            "apellidos": "Lamas",
+            "cargo_activo_url": "https://www.leylobby.gob.cl/api/v1/cargos-activos/60876",
+            "representa": {
+                "rut_representado": "76.378.017-1",
+                "nombre": "Santiago Solar S.A.",
+                "tipo": "persona_juridica",
+                "pais": "CHL",
+                "giro": "Generación en Otra Centrales",
+                "domicilio": "Generación de Energía Eléctria",
+                "representante_legal": "Juan José Gana",
+                "naturaleza": "Sociedad Anónima",
+                "directorio": "Juan José Gana\nClara Bowman"
+            }
+        },
+        {
+            "id_audiencia": 488848,
+            "id_cargo_activo": 146989,
+            "nombres": "Oscar",
+            "apellidos": "Bustamante",
+            "cargo_activo_url": "https://www.leylobby.gob.cl/api/v1/cargos-activos/146989",
+            "representa": {
+                "rut_representado": "76.378.017-1",
+                "nombre": "Santiago Solar S.A.",
+                "tipo": "persona_juridica",
+                "pais": "CHL",
+                "giro": "Generación en otras Centrales",
+                "domicilio": "Generación de Energía",
+                "representante_legal": "Juan José Gana",
+                "naturaleza": "Sociedad Anónima",
+                "directorio": "Juan José Gana\nClara Bowman"
+            }
+        }
+    ],
+    "materias": [
+        {
+            "nombre": "Elaboración, dictación, modificación, denegación o rechazo de actos administrativos, proyectos de ley y leyes y también de las decisiones que tomen los sujetos pasivos."
+        }
+    ]
+}

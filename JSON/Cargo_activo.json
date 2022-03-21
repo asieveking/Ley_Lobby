@@ -1,0 +1,30 @@
+[
+    {
+        "id_sujeto_activo_institucion": 42936,  
+        "tipo": "persona_natural",
+        "remunerado": false,
+        "sujeto": {
+            "nombres": "Oscar Gerardo", 
+            "apellidos": "Uribe Bravo" 
+        },
+        "institucion": {
+            "id_institucion": 373, 
+            "codigo_institucion": "AW002", 
+            "nombre_institucion": "Subsecretaría del Medio Ambiente" 
+        }
+    },
+    {
+        "id_sujeto_activo_institucion": 60424,
+        "tipo": "persona_natural",
+        "remunerado": false,
+        "sujeto": {
+            "nombres": "Oscar Gerardo",
+            "apellidos": "Uribe Bravo"
+        },
+        "institucion": {
+            "id_institucion": 288,
+            "codigo_institucion": "AU001",
+            "nombre_institucion": "Comisión Nacional de Energía"
+        }
+    }
+]
