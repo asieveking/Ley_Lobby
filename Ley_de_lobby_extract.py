@@ -31,7 +31,7 @@ def main():
         with SQL_Conection.SQLServer() as crsr:
             #List instituciones
             crsr.execute('SELECT Id_Institucion, Id_Codigo FROM Ley_Lobby.dbo.Institucion')
-            obj_institucion =Controller.Instituciones()
+            obj_institucion =Controller.Institucion()
             obj_institucion._instituciones = crsr.fetchall()
 
             #Num_page INCREMENTO

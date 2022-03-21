@@ -19,15 +19,15 @@ class Persona:
             apellidos="".join( [caracter if caracter.isalpha() is True else " " for caracter in apellidos])
             self._apellidos=" ".join(apellidos.split()).title()
 
-class Instituciones:
+class Institucion:
     _id_institucion:int=None
     _cod_institucion:str=None
     _instituciones:list=[]
 
     def get_codigo(self,id_institucion:int):
         self._id_institucion=id_institucion
-        cod=[ id[1] for id in self._instituciones if id[0]==self._id_institucion ]       
-        self._cod_institucion= cod[0] if len(cod)>0 else None
+        self._cod_institucion=next( (id[1] for id in self._instituciones if id[0]==self._id_institucion) ,None)       
+         
     
 
 class Cargo:   
