@@ -32,21 +32,21 @@ def main():
             #List instituciones
             crsr.execute('SELECT Id_Institucion, Id_Codigo FROM Ley_Lobby.dbo.Institucion')
             obj_institucion =Controller.Institucion()
-            obj_institucion._instituciones = crsr.fetchall()
+            obj_institucion.list_instituciones = crsr.fetchall()
 
             #Num_page INCREMENTO
             statement ='SELECT Page_Incremento,Page_Decremento,Page_Limit FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
             list_num_page=crsr.execute(statement,["Audiencia"]).fetchall()[0]        
             obj_num_page = Controller.Num_Page(*list_num_page)
 
-            num_page=obj_num_page._num_page
+            num_page=obj_num_page.num_page
             print(num_page)
             cantidad_total_de_peticiones_establecidos_en_la_API=8000
 
             url_api_list_audiencias_page,url_api_audiencia,url_api_list_cargos_pasivos,url_api_list_instituciones = [url+element+'{}' for element in elements_url ]             
             
             while obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==False:  
-                list_audiencias_api,time_start,flag=Funciones.get_request_api(url_api_list_audiencias_page.format(obj_num_page._num_page),time_start,header )
+                list_audiencias_api,time_start,flag=Funciones.get_request_api(url_api_list_audiencias_page.format(obj_num_page.num_page),time_start,header )
                 cantidad_total_de_peticiones_establecidos_en_la_API-=1
                 #Loop audiencias por page        
                 for audiencia in list_audiencias_api["data"]:
@@ -86,75 +86,75 @@ def main():
                         obj_institucion.get_codigo(cargo_pasivo["id_institucion"] )
 
                         #Si institucion no existe entonces Insert Institucion
-                        if obj_institucion._cod_institucion  is None:                                                 
-                            institucion,time_start,flag=Funciones.get_request_api(url_api_list_instituciones.format(obj_institucion._id_institucion),time_start,header)
+                        if obj_institucion.codigo_institucion  is None:                                                 
+                            institucion,time_start,flag=Funciones.get_request_api(url_api_list_instituciones.format(obj_institucion.id_institucion),time_start,header)
                             cantidad_total_de_peticiones_establecidos_en_la_API-=1
-                            obj_institucion._cod_institucion = institucion["codigo"]
+                            obj_institucion.codigo_institucion = institucion["codigo"]
                             #Load a lista instituciones
-                            obj_institucion._instituciones.append([obj_institucion._id_institucion,obj_institucion._cod_institucion])
+                            obj_institucion.list_instituciones.append([obj_institucion.id_institucion,obj_institucion.codigo_institucion])
                             #Insert data
-                            storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Institucion_sp] ?,?,?;"
-                            params= (obj_institucion._id_institucion,obj_institucion._cod_institucion,institucion["nombre"].strip())   
-                            crsr.execute(storeProcedure,params)    
+                            store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Institucion_sp] ?,?,?;"
+                            params= (obj_institucion.id_institucion,obj_institucion.codigo_institucion,institucion["nombre"].strip())   
+                            crsr.execute(store_procedure,params)    
 
                         #Insert Persona Pasiva            
-                        storeProcedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?,?;"
-                        params= (obj_persona_pasiva._nombres,obj_persona_pasiva._apellidos,'Pasivo',obj_persona_pasiva._id_sujeto_pasivo_api,obj_cargo._nombre_cargo,obj_institucion._id_institucion,obj_cargo._id_cargo_api)
-                        crsr.execute(storeProcedure,params)
+                        store_procedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?,?;"
+                        params= (obj_persona_pasiva.nombres,obj_persona_pasiva.apellidos,'Pasivo',obj_persona_pasiva._id_sujeto_pasivo_api,obj_cargo.nombre_cargo,obj_institucion.id_institucion,obj_cargo._id_cargo_api)
+                        crsr.execute(store_procedure,params)
                         id_perfil_temp=crsr.fetchval() 
                         
                         #Cuando los id_cargos y las id_Instituciones sean iguales entonces se copiaran los valores entre las variables
-                        if obj_cargo._id_cargo_api==audiencia['id_cargo'] and obj_institucion._id_institucion==audiencia['id_institucion']: 
-                            obj_persona_pasiva._id_perfil=id_perfil_temp                      
-                            cod_institucion=obj_institucion._cod_institucion
+                        if obj_cargo._id_cargo_api==audiencia['id_cargo'] and obj_institucion.id_institucion==audiencia['id_institucion']: 
+                            obj_persona_pasiva.id_perfil=id_perfil_temp                      
+                            cod_institucion=obj_institucion.codigo_institucion
 
                         #Insert Detalle Persona Pasiva   
-                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Detalle_Perfil_sp] ?,?,?,?,?;"
-                        crsr.execute(storeProcedure,[id_perfil_temp,obj_cargo._fecha_inicio,obj_cargo._fecha_termino,obj_cargo._resolucion,obj_cargo._url_resolucion])
+                        store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Detalle_Perfil_sp] ?,?,?,?,?;"
+                        crsr.execute(store_procedure,[id_perfil_temp,obj_cargo.fecha_inicio,obj_cargo.fecha_termino,obj_cargo.resolucion,obj_cargo.url_resolucion])
                         
                         #Insertar identificadores vinculadas Id_OC and Id_Licitacion
-                        if len(obj_cargo._list_identificadores_vinculados)>0:   
-                            for identificador in obj_cargo._list_identificadores_vinculados:                  
+                        if len(obj_cargo.list_identificadores_vinculados)>0:   
+                            for identificador in obj_cargo.list_identificadores_vinculados:                  
                                 crsr.execute("EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Identificador_sp] ?,?;",[id_perfil_temp,identificador])
 
                     #En el caso de que el registro no este dentro de la lista "list_cargos_pasivos_api"... Entonces, buscarlo dentro de la "list_cargos_pasivos_db"
-                    if obj_persona_pasiva._id_perfil is None:
+                    if obj_persona_pasiva.id_perfil is None:
                         if cod_institucion is None:
                             obj_institucion.get_codigo(audiencia["id_institucion"] )
                         else:
-                            obj_institucion._id_institucion,obj_institucion._cod_institucion=audiencia["id_institucion"],cod_institucion
+                            obj_institucion.id_institucion,obj_institucion.codigo_institucion=audiencia["id_institucion"],cod_institucion
                         
-                        obj_persona_pasiva._id_perfil=next(cargo[0] for cargo in list_cargos_pasivos_db if obj_institucion._id_institucion==cargo[1] and cargo[2]==audiencia['id_cargo'])
+                        obj_persona_pasiva.id_perfil=next(cargo[0] for cargo in list_cargos_pasivos_db if obj_institucion.id_institucion==cargo[1] and cargo[2]==audiencia['id_cargo'])
                     
                     #Load Audiencia
                     obj_audiencia=Controller.Audiencia(audiencia["id_audiencia"],audiencia['lugar'],audiencia['referencia'],audiencia['comuna'],audiencia['fecha_inicio'],audiencia['fecha_termino'])   #(self,id_audiencia,lugar,observacion,ubicacion,id_cargo):
 
                     #Detalle de Audiencia API                          
-                    detalle_audiencia,time_start,flag=Funciones.get_request_api(url_api_audiencia.format(obj_audiencia._id_audiencia),time_start,header)                       
+                    detalle_audiencia,time_start,flag=Funciones.get_request_api(url_api_audiencia.format(obj_audiencia.id_audiencia),time_start,header)                       
                     cantidad_total_de_peticiones_establecidos_en_la_API-=1
 
                     #Create url's infoLobby & LeyLobby     
-                    obj_audiencia.url_build_web(obj_institucion._cod_institucion,obj_persona_pasiva._id_sujeto_pasivo_api)   
+                    obj_audiencia.url_build_web(obj_institucion.codigo_institucion,obj_persona_pasiva._id_sujeto_pasivo_api)   
 
                     #Detalle de Audiencia INSERT   
-                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_sp] ?,?,?,?,?,?,?,?,?;"
-                    crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_audiencia._fecha_inicio,obj_audiencia._fecha_termino,obj_audiencia._lugar,detalle_audiencia['forma'],obj_audiencia._observacion,obj_audiencia._ubicacion,obj_audiencia._url_info_lobby,obj_audiencia._url_ley_lobby])             
-                    storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?,?;"
-                    crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_pasiva._id_perfil,None,None,'Principal']) #Existen reuniones donde hay mas de dos integrantes que son pasivos (empleados publicos). Estos, solo estan en visibles en la direccion url (Pagina WEB) pero no dentro de la respuesta de la API
+                    store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_sp] ?,?,?,?,?,?,?,?,?;"
+                    crsr.execute(store_procedure,[obj_audiencia.id_audiencia,obj_audiencia.fecha_inicio,obj_audiencia.fecha_termino,obj_audiencia.lugar,detalle_audiencia['forma'],obj_audiencia.observacion,obj_audiencia.ubicacion,obj_audiencia.url_info_lobby,obj_audiencia.url_ley_lobby])             
+                    store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?,?;"
+                    crsr.execute(store_procedure,[obj_audiencia.id_audiencia,obj_persona_pasiva.id_perfil,None,None,'Principal']) #Existen reuniones donde hay mas de dos integrantes que son pasivos (empleados publicos). Estos, solo estan en visibles en la direccion url (Pagina WEB) pero no dentro de la respuesta de la API
                     
                     #Insert Materias
                     for materia in detalle_audiencia['materias']:
                         obj_materia=Controller.Materia(materia['nombre'])
-                        if obj_materia._nombre is not None:
-                            storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_Has_Materia_sp] ?,?;"
-                            crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_materia._nombre])                 
+                        if obj_materia.nombre is not None:
+                            store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_Has_Materia_sp] ?,?;"
+                            crsr.execute(store_procedure,[obj_audiencia.id_audiencia,obj_materia.nombre])                 
                     list_cargos_activos_temp=[]
                     #Insert Cargos Activos,
                     for cargo_activo in detalle_audiencia['asistentes']:
                         obj_persona_activa= Controller.Persona(cargo_activo['nombres'],cargo_activo['apellidos'])                  
-                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?;"                
-                        crsr.execute(storeProcedure,[obj_persona_activa._nombres,obj_persona_activa._apellidos,'Activo',None,None,None])                
-                        obj_persona_activa._id_perfil=crsr.fetchval()
+                        store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?;"                
+                        crsr.execute(store_procedure,[obj_persona_activa.nombres,obj_persona_activa.apellidos,'Activo',None,None,None])                
+                        obj_persona_activa.id_perfil=crsr.fetchval()
                         
                         id_entidad=nombre_representa=None
                         representa=cargo_activo['representa']
@@ -163,8 +163,8 @@ def main():
                         #Insert Empresa/Entidad del Persona Activo
                         if 'rut_representado' in cargo_activo['representa']:                              
                             obj_entidad=Controller.Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
-                            storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
-                            crsr.execute(storeProcedure,[obj_entidad._rut,obj_entidad._rut_es_valido,obj_entidad._nombre,obj_entidad._giro,obj_entidad._representante_directorio,obj_entidad._directorio,representa['pais'],obj_entidad._domicilio,obj_entidad._naturaleza])
+                            store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
+                            crsr.execute(store_procedure,[obj_entidad._rut,obj_entidad.rut_es_valido,obj_entidad.nombre,obj_entidad.giro,obj_entidad.representante_directorio,obj_entidad.directorio,representa['pais'],obj_entidad.domicilio,obj_entidad.naturaleza])
                             id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
                         else:
                             nombre=representa['nombre']
@@ -172,29 +172,29 @@ def main():
                                 nombre_representa=Funciones.limpiar_texto(nombre)          
                                 nombre_representa=Funciones.limpiar_nombre(nombre_representa).title()
                                 list_nombres_representa=nombre_representa.split()
-                                list_nombres_persona=obj_persona_activa._nombres.split()+obj_persona_activa._apellidos.split()
+                                list_nombres_persona=obj_persona_activa.nombres.split()+obj_persona_activa.apellidos.split()
                                 if any(nombre for nombre in  list_nombres_persona if nombre in list_nombres_representa ):
                                     nombre_representa=None    
                         
-                        storeProcedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?,?;"
-                        crsr.execute(storeProcedure,[obj_audiencia._id_audiencia,obj_persona_activa._id_perfil,id_entidad,nombre_representa,None])
+                        store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Audiencia_sp] ?,?,?,?,?;"
+                        crsr.execute(store_procedure,[obj_audiencia.id_audiencia,obj_persona_activa.id_perfil,id_entidad,nombre_representa,None])
 
                     print(f'id_audiencia: {id_audiencia} - cantidad de cargos activos: {len( detalle_audiencia["asistentes"] )} - cantidad de tiempo: {time.time()-start_performance}')          
                     
                     if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==True:
                         break
                 
-                if obj_num_page._num_page_incremento<list_audiencias_api["last_page"]: 
-                    obj_num_page._num_page_incremento+=1 
-                    num_page= obj_num_page._num_page = obj_num_page._num_page_incremento 
+                if obj_num_page.num_page_incremento<list_audiencias_api["last_page"]: 
+                    obj_num_page.num_page_incremento+=1 
+                    num_page= obj_num_page.num_page = obj_num_page.num_page_incremento 
                     statement = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_INCREMENTO=?  WHERE Area_Num_Page=?'
-                    crsr.execute(statement,[obj_num_page._num_page,"AUDIENCIA"])  
-                elif obj_num_page._num_page_decremento> obj_num_page._num_page_limit:
-                    obj_num_page._num_page_decremento -=1
-                    num_page = obj_num_page._num_page= obj_num_page._num_page_decremento 
+                    crsr.execute(statement,[obj_num_page.num_page,"AUDIENCIA"])  
+                elif obj_num_page.num_page_decremento> obj_num_page.num_page_limit:
+                    obj_num_page.num_page_decremento -=1
+                    num_page = obj_num_page.num_page= obj_num_page.num_page_decremento 
                     statement = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_DECREMENTO=?  WHERE Area_Num_Page=?'
-                    crsr.execute(statement,[obj_num_page._num_page,"AUDIENCIA"]) 
-                elif obj_num_page._num_page_incremento>=list_audiencias_api["last_page"] and obj_num_page._num_page_decremento<= obj_num_page._num_page_limit:
+                    crsr.execute(statement,[obj_num_page.num_page,"AUDIENCIA"]) 
+                elif obj_num_page.num_page_incremento>=list_audiencias_api["last_page"] and obj_num_page.num_page_decremento<= obj_num_page.num_page_limit:
                     break
                 print(num_page)           
                     
