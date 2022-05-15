@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
 import SQL_Conection
-#!pip install pandas
+
 import pandas as pd
 
 cnxn =SQL_Conection.SQLServer()
@@ -17,6 +17,6 @@ df = df.replace('\r\n','', regex=True)
 df.to_csv('D:/Tableau/Ley_Lobby/Audiencias_All.txt',index=False,  sep=';', mode="w")
 
 query="SELECT * FROM [Ley_Lobby].[dbo].[Perfil_Licitacion]"
-df=pd.read_sql_query(query,cnxn._db_connection) #https://medium.com/@devartimahakalkar/connecting-sql-datasets-with-pandas-105f8eb68f1a
+df=pd.read_sql_query(query,cnxn.db_connection) #https://medium.com/@devartimahakalkar/connecting-sql-datasets-with-pandas-105f8eb68f1a
 df = df.replace('\r\n','', regex=True)
 df.to_csv('D:/Tableau/Ley_Lobby/Perfil_Licitacion.txt',index=False,  sep=';', mode="w")

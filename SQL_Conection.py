@@ -1,10 +1,9 @@
 #SQL Conection
-
 import os
 
 # To work with the .env file (python-dotenv )
 from dotenv import load_dotenv
-#pip install pyodbc
+
 import pyodbc 
 
 
@@ -20,7 +19,7 @@ class SQLServer:
         user_server=os.getenv('USER_SERVER')  
         pass_server=os.getenv('PASS_SERVER')
         try:            
-            self.db_connection =  pyodbc.connect('Driver={SQL Server}; Server='+server+';Port:'+self._port+'; Database='+database_name+'; UID='+user_server+'; PWD='+pass_server+';',autocommit=True)
+            self.db_connection =  pyodbc.connect('Driver={SQL Server}; Server='+server+';Port:'+self.port+'; Database='+database_name+'; UID='+user_server+'; PWD='+pass_server+';',autocommit=True)
             self.db_cursor = self.db_connection.cursor()
         except Exception as e:
             print(e)
