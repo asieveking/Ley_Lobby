@@ -1,10 +1,13 @@
-import sys, os
+import sys
+import os
+
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
-import SQL_Conection
+import sample.sql_connection as sql_connection
 
 import pandas as pd
 
-cnxn =SQL_Conection.SQLServer()
+
+cnxn =sql_connection.SQLServer()
 crsr= cnxn.db_cursor
 
 

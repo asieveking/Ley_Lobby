@@ -5,13 +5,13 @@ import os
 # To work with the .env file
 from dotenv import load_dotenv
 
-import Funciones
-import Controller
-import SQL_Conection 
+import sample.functions as functions
+import sample.controller as controller
+import sample.sql_connection as sql_connection
       
 #---------------------------------------
 def main():
-    obj_hora_chile=Controller.HoraChile()
+    obj_hora_chile=controller.HoraChile()
     if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
         diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile._hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
         print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile._hora_inicio_extraccion.time()} hasta las {obj_hora_chile._hora_final_extraccion.time()}, Horario de Chile')     
@@ -28,16 +28,16 @@ def main():
         url="https://www.leylobby.gob.cl/api/v1/"
         elements_url=["audiencias?page=","audiencias/", "cargos-pasivos/", "instituciones/"]
         
-        with SQL_Conection.SQLServer() as crsr:
+        with sql_connection.SQLServer() as crsr:
             #List instituciones
             crsr.execute('SELECT Id_Institucion, Id_Codigo FROM Ley_Lobby.dbo.Institucion')
-            obj_institucion =Controller.Institucion()
+            obj_institucion =controller.Institucion()
             obj_institucion.list_instituciones = crsr.fetchall()
 
             #Num_page INCREMENTO
             statement ='SELECT Page_Incremento,Page_Decremento,Page_Limit FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
             list_num_page=crsr.execute(statement,["Audiencia"]).fetchall()[0]        
-            obj_num_page = Controller.Num_Page(*list_num_page)
+            obj_num_page = controller.Num_Page(*list_num_page)
 
             num_page=obj_num_page.num_page
             print(num_page)
@@ -46,7 +46,7 @@ def main():
             url_api_list_audiencias_page,url_api_audiencia,url_api_list_cargos_pasivos,url_api_list_instituciones = [url+element+'{}' for element in elements_url ]             
             
             while obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==False:  
-                list_audiencias_api,time_start,flag=Funciones.get_request_api(url_api_list_audiencias_page.format(obj_num_page.num_page),time_start,header )
+                list_audiencias_api,time_start,flag=functions.get_request_api(url_api_list_audiencias_page.format(obj_num_page.num_page),time_start,header )
                 cantidad_total_de_peticiones_establecidos_en_la_API-=1
                 #Loop audiencias por page        
                 for audiencia in list_audiencias_api["data"]:
@@ -54,7 +54,7 @@ def main():
                     id_audiencia=audiencia["id_audiencia"]
 
                     #Load Persona Pasiva
-                    obj_persona_pasiva=Controller.Persona(audiencia['nombres'],audiencia['apellidos'])    #(self,nombres,apellidos): audiencia["id_sujeto_pasivo"]  
+                    obj_persona_pasiva=controller.Persona(audiencia['nombres'],audiencia['apellidos'])    #(self,nombres,apellidos): audiencia["id_sujeto_pasivo"]  
                     obj_persona_pasiva._id_sujeto_pasivo_api=audiencia["id_sujeto_pasivo"]  
                     
                     #List Cargo_instituciones por id de sujeto Pasivo                                   
@@ -64,7 +64,7 @@ def main():
                     list_cargos_pasivos_db = crsr.fetchall()
 
                     #Get Cargos Pasivos API 
-                    list_cargos_pasivos_api,time_start,flag=Funciones.get_request_api(url_api_list_cargos_pasivos.format(obj_persona_pasiva._id_sujeto_pasivo_api),time_start,header)                
+                    list_cargos_pasivos_api,time_start,flag=functions.get_request_api(url_api_list_cargos_pasivos.format(obj_persona_pasiva._id_sujeto_pasivo_api),time_start,header)                
                     cantidad_total_de_peticiones_establecidos_en_la_API-=1
                     cod_institucion=None
 
@@ -73,13 +73,13 @@ def main():
 
                         if any(True for cargo_pasivo_db in list_cargos_pasivos_db  if cargo_pasivo["id_institucion"]==cargo_pasivo_db[1] 
                         and cargo_pasivo["id_cargo_pasivo"]==cargo_pasivo_db[2] and cargo_pasivo["fecha_inicio"]==cargo_pasivo_db[3]
-                        and cargo_pasivo["fecha_termino"]==cargo_pasivo_db[4] and (Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion"]) is False and cargo_pasivo_db[5] is not None
-                        or Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion"]) is True and cargo_pasivo_db[5] is None )
-                        and (Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is False and cargo_pasivo_db[6] is not None 
-                        or Funciones.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is True and cargo_pasivo_db[6] is None ) ):                        
+                        and cargo_pasivo["fecha_termino"]==cargo_pasivo_db[4] and (functions.es_vacio_o_nulo(cargo_pasivo["resolucion"]) is False and cargo_pasivo_db[5] is not None
+                        or functions.es_vacio_o_nulo(cargo_pasivo["resolucion"]) is True and cargo_pasivo_db[5] is None )
+                        and (functions.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is False and cargo_pasivo_db[6] is not None 
+                        or functions.es_vacio_o_nulo(cargo_pasivo["resolucion_url"]) is True and cargo_pasivo_db[6] is None ) ):                        
                             continue
                         
-                        obj_cargo=Controller.Cargo(cargo_pasivo["id_cargo_pasivo"],cargo_pasivo["cargo"])   
+                        obj_cargo=controller.Cargo(cargo_pasivo["id_cargo_pasivo"],cargo_pasivo["cargo"])   
                         obj_cargo.rellenar_campos(cargo_pasivo["resolucion"],cargo_pasivo["resolucion_url"],cargo_pasivo["fecha_inicio"],cargo_pasivo["fecha_termino"])                
                         
                         #Load Institucion            
@@ -87,7 +87,7 @@ def main():
 
                         #Si institucion no existe entonces Insert Institucion
                         if obj_institucion.codigo_institucion  is None:                                                 
-                            institucion,time_start,flag=Funciones.get_request_api(url_api_list_instituciones.format(obj_institucion.id_institucion),time_start,header)
+                            institucion,time_start,flag=functions.get_request_api(url_api_list_instituciones.format(obj_institucion.id_institucion),time_start,header)
                             cantidad_total_de_peticiones_establecidos_en_la_API-=1
                             obj_institucion.codigo_institucion = institucion["codigo"]
                             #Load a lista instituciones
@@ -127,10 +127,10 @@ def main():
                         obj_persona_pasiva.id_perfil=next(cargo[0] for cargo in list_cargos_pasivos_db if obj_institucion.id_institucion==cargo[1] and cargo[2]==audiencia['id_cargo'])
                     
                     #Load Audiencia
-                    obj_audiencia=Controller.Audiencia(audiencia["id_audiencia"],audiencia['lugar'],audiencia['referencia'],audiencia['comuna'],audiencia['fecha_inicio'],audiencia['fecha_termino'])   #(self,id_audiencia,lugar,observacion,ubicacion,id_cargo):
+                    obj_audiencia=controller.Audiencia(audiencia["id_audiencia"],audiencia['lugar'],audiencia['referencia'],audiencia['comuna'],audiencia['fecha_inicio'],audiencia['fecha_termino'])   #(self,id_audiencia,lugar,observacion,ubicacion,id_cargo):
 
                     #Detalle de Audiencia API                          
-                    detalle_audiencia,time_start,flag=Funciones.get_request_api(url_api_audiencia.format(obj_audiencia.id_audiencia),time_start,header)                       
+                    detalle_audiencia,time_start,flag=functions.get_request_api(url_api_audiencia.format(obj_audiencia.id_audiencia),time_start,header)                       
                     cantidad_total_de_peticiones_establecidos_en_la_API-=1
 
                     #Create url's infoLobby & LeyLobby     
@@ -144,14 +144,14 @@ def main():
                     
                     #Insert Materias
                     for materia in detalle_audiencia['materias']:
-                        obj_materia=Controller.Materia(materia['nombre'])
+                        obj_materia=controller.Materia(materia['nombre'])
                         if obj_materia.nombre is not None:
                             store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Audiencia_Has_Materia_sp] ?,?;"
                             crsr.execute(store_procedure,[obj_audiencia.id_audiencia,obj_materia.nombre])                 
                     list_cargos_activos_temp=[]
                     #Insert Cargos Activos,
                     for cargo_activo in detalle_audiencia['asistentes']:
-                        obj_persona_activa= Controller.Persona(cargo_activo['nombres'],cargo_activo['apellidos'])                  
+                        obj_persona_activa= controller.Persona(cargo_activo['nombres'],cargo_activo['apellidos'])                  
                         store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?;"                
                         crsr.execute(store_procedure,[obj_persona_activa.nombres,obj_persona_activa.apellidos,'Activo',None,None,None])                
                         obj_persona_activa.id_perfil=crsr.fetchval()
@@ -162,15 +162,15 @@ def main():
 
                         #Insert Empresa/Entidad del Persona Activo
                         if 'rut_representado' in cargo_activo['representa']:                              
-                            obj_entidad=Controller.Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
+                            obj_entidad=controller.Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
                             store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
                             crsr.execute(store_procedure,[obj_entidad._rut,obj_entidad.rut_es_valido,obj_entidad.nombre,obj_entidad.giro,obj_entidad.representante_directorio,obj_entidad.directorio,representa['pais'],obj_entidad.domicilio,obj_entidad.naturaleza])
                             id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
                         else:
                             nombre=representa['nombre']
-                            if Funciones.es_vacio_o_nulo(nombre)is False and any(char.isalpha() for char in nombre) and len(nombre)>=3:
-                                nombre_representa=Funciones.limpiar_texto(nombre)          
-                                nombre_representa=Funciones.limpiar_nombre(nombre_representa).title()
+                            if functions.es_vacio_o_nulo(nombre)is False and any(char.isalpha() for char in nombre) and len(nombre)>=3:
+                                nombre_representa=functions.limpiar_texto(nombre)          
+                                nombre_representa=functions.limpiar_nombre(nombre_representa).title()
                                 list_nombres_representa=nombre_representa.split()
                                 list_nombres_persona=obj_persona_activa.nombres.split()+obj_persona_activa.apellidos.split()
                                 if any(nombre for nombre in  list_nombres_persona if nombre in list_nombres_representa ):
