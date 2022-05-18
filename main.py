@@ -164,7 +164,7 @@ def main():
                         if 'rut_representado' in cargo_activo['representa']:                              
                             obj_entidad=controller.Entidad(representa['rut_representado'],representa['nombre'],representa['giro'],representa['domicilio'],representa['representante_legal'],representa['naturaleza'],representa['directorio'])  #(self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):                                        
                             store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"                    
-                            crsr.execute(store_procedure,[obj_entidad._rut,obj_entidad.rut_es_valido,obj_entidad.nombre,obj_entidad.giro,obj_entidad.representante_directorio,obj_entidad.directorio,representa['pais'],obj_entidad.domicilio,obj_entidad.naturaleza])
+                            crsr.execute(store_procedure,[obj_entidad.rut,obj_entidad.rut_es_valido,obj_entidad.nombre,obj_entidad.giro,obj_entidad.representante_directorio,obj_entidad.directorio,representa['pais'],obj_entidad.domicilio,obj_entidad.naturaleza])
                             id_entidad=obj_entidad._id_Entidad= crsr.fetchval() 
                         else:
                             nombre=representa['nombre']
