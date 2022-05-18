@@ -1,7 +1,7 @@
 import datetime
 from dateutil import tz
 
-import sample.functions as functions
+from sample import functions
 
 class Persona:
     id_perfil:int=None  #string      

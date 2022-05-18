@@ -5,9 +5,7 @@ import os
 # To work with the .env file
 from dotenv import load_dotenv
 
-import sample.functions as functions
-import sample.controller as controller
-import sample.sql_connection as sql_connection
+from sample import functions, controller, sql_connection
       
 #---------------------------------------
 def main():
