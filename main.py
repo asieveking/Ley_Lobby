@@ -181,7 +181,7 @@ def main():
                             store_procedure = "EXEC [Ley_Lobby].[dbo].[ins_Audiencia_Has_Materia_sp] ?,?;"
                             crsr.execute(store_procedure, [
                                          obj_audiencia.id_audiencia, obj_materia.nombre])
-                    list_cargos_activos_temp = []
+
                     # Insert Cargos Activos,
                     for cargo_activo in detalle_audiencia['asistentes']:
                         obj_persona_activa = controller.Persona(
@@ -197,7 +197,6 @@ def main():
 
                         # Insert Empresa/Entidad del Persona Activo
                         if 'rut_representado' in cargo_activo['representa']:
-                            # (self,rut,nombre,giro,domicilio,representante,naturaleza,directorio):
                             obj_entidad = controller.Entidad(representa['rut_representado'], representa['nombre'], representa['giro'],
                                                              representa['domicilio'], representa['representante_legal'], representa['naturaleza'], representa['directorio'])
                             store_procedure = "EXEC [Ley_Lobby].[dbo].[ins_Entidad_sp] ?,?,?,?,?,?,?,?,?;"
