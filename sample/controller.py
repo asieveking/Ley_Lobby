@@ -158,21 +158,21 @@ class HoraChile():
         datetime_chile=self.reconstruir_hora_de_chile()      
         
         #Establece la hora de inicio y termino de ejecucion
-        self._hora_inicio_extraccion = datetime_chile.replace(hour=18,minute=00,second=0,microsecond=0)+datetime.timedelta(days=-1 if datetime_chile.time() <= datetime.time(8,0,0,0) and datetime_chile.time() >= datetime.time.min else 0)# Hora Oficial Entre 22:00 a 07:00 hrs. Restriccion horaria para extraer desde la API
-        self._hora_final_extraccion = datetime_chile.replace(hour=8,minute=00,second=0,microsecond=0)+datetime.timedelta(days=1 if datetime_chile.time() >= datetime.time(8,0,0,1) and datetime_chile.time() <= datetime.time.max else 0)#hora Oficial       
+        self.hora_inicio_extraccion = datetime_chile.replace(hour=18,minute=00,second=0,microsecond=0)+datetime.timedelta(days=-1 if datetime_chile.time() <= datetime.time(8,0,0,0) and datetime_chile.time() >= datetime.time.min else 0)# Hora Oficial Entre 22:00 a 07:00 hrs. Restriccion horaria para extraer desde la API
+        self.hora_final_extraccion = datetime_chile.replace(hour=8,minute=00,second=0,microsecond=0)+datetime.timedelta(days=1 if datetime_chile.time() >= datetime.time(8,0,0,1) and datetime_chile.time() <= datetime.time.max else 0)#hora Oficial       
 
       
     def calcular_si_hora_de_extraccion_es_valida(self)->bool:                
-        return datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) < self._hora_inicio_extraccion  
+        return datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) < self.hora_inicio_extraccion  
     
     def calcular_si_fecha_actual_es_menor_a_la_hora_final_de_extraccion(self,fecha_extraccion)->bool:
-        return  datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) < self._hora_final_extraccion  and fecha_extraccion.date() < datetime.datetime.now(self.__utc_chile).date()
+        return  datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) < self.hora_final_extraccion  and fecha_extraccion.date() < datetime.datetime.now(self.__utc_chile).date()
     
     def reconstruir_hora_de_chile(self)-> datetime:
         return datetime.datetime.now(self.__utc_chile).replace(tzinfo=None)   
     
     def calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion(self)->datetime:
-        return datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) > self._hora_final_extraccion
+        return datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) > self.hora_final_extraccion
 
 class Num_Page:
     num_page_incremento:int
