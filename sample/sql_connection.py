@@ -1,7 +1,6 @@
 #SQL Conection
 import os
 
-# To work with the .env file (python-dotenv )
 from dotenv import load_dotenv
 
 import pyodbc 
@@ -26,9 +25,7 @@ class SQLServer:
     def __enter__(self):        
         return self.db_cursor
        
-    def __exit__(self, exc_type, exc_value, traceback):
-        # if exc_type or exc_value or traceback:
-        #     self._db_connection.close()
+    def __exit__(self, exc_type, exc_value, traceback):      
         self.db_cursor.close()
         self.db_connection.close()
     

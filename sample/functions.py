@@ -4,12 +4,6 @@ import time
 import re
 import html
 
-# #!pip install ntplib
-# import ntplib
-# #!pip install beautifulsoup4
-# from bs4 import BeautifulSoup
-
-
 def transcripcion_simbolos_vocales(texto:str)->str:
     """_summary_
 
@@ -105,12 +99,10 @@ def get_request_api(url:str,time_start:time,header:dict={},verify:bool=True,segu
     flag_loop=True
     while flag_loop:
         diferencia=segundos_espera-(time.time()-time_start)
-        time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)wwwwwwww
-        #payload,headers ={},{}  
+        time.sleep(0 if diferencia < 0 else diferencia ) # 300 miliseconds (.3) or 5 seconds (5)wwwwwwww        
         json,flag,time_start=None,True,time.time()    
         try:            
-            with requests.get( url,headers=header, timeout=180,verify=verify) as response:            
-                # print(f'{response} and {response.text}')  
+            with requests.get( url,headers=header, timeout=180,verify=verify) as response:                            
                 json=response.json()            
                 assert response.status_code==200 and json is not None
         except requests.exceptions.ConnectionError or requests.exceptions.ReadTimeout:
@@ -121,64 +113,3 @@ def get_request_api(url:str,time_start:time,header:dict={},verify:bool=True,segu
             flag_loop=False
     
     return json,time_start,flag
-
-# def get_url_scrappy(url:str,segundos_espera:int=15):
-#     source,intento=None,3    
-#     time.sleep(segundos_espera)
-#     while source is None and intento>0:
-#         try:
-#             source= requests.get(url, timeout=120)
-#             source.raise_for_status()                                             
-#         except:
-#             source=None
-#             time.sleep(100)
-#         finally:
-#             intento-=1
-#     return BeautifulSoup(source.text, 'lxml') if source  else None   
-
-# def hora_chile():
-#     response,intento= None,3 
-#     c = ntplib.NTPClient()
-#     while response is None and intento>0:
-#         try:            
-#             response = c.request('ntp.shoa.cl',timeout=60)           
-#         except:
-#             time.sleep(5)
-#         finally:
-#             if response is None:
-#                 intento-=1
-#     return datetime.datetime.fromtimestamp(response.dest_time) if response is not None else None 
-
-
-
-
-
-# def buscar_distinto(lista_api,lista_db):
-    
-#     list_temp=[id["CodigoExterno"] for id in lista_api ]
-
-#     list_temp2= list(set(list_temp))
-#     list_temp3=list(dict.fromkeys(list_temp))
-#     list_temp4= [x for  x in list_temp if list_temp.count(x) > 1]
-
-
-# from requests.adapters import HTTPAdapter
-# from requests.packages.urllib3.util.retry import Retry
-# def requests_retry_session(
-#     retries=3,
-#     backoff_factor=0.5,
-#     status_forcelist=(500, 502, 504),
-#     session=None,
-# ):
-#     session = session or requests.Session()
-#     retry = Retry(
-#         total=retries,
-#         read=retries,
-#         connect=retries,
-#         backoff_factor=backoff_factor,
-#         status_forcelist=status_forcelist,
-#     )
-#     adapter = HTTPAdapter(max_retries=retry)
-#     session.mount('http://', adapter)
-#     session.mount('https://', adapter)
-#     return session
