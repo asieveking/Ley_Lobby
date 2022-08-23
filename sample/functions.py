@@ -28,6 +28,11 @@ def transcripcion_simbolos_vocales(texto:str)->str:
     transcription = str.maketrans(a,b)
     return texto.translate(transcription).strip() 
 
+def borrar_caracteres_no_alfabeticos(texto:str) -> str:
+    texto = "".join( [caracter if caracter.isalpha() is True else " " for caracter in texto])
+    return " ".join(texto.split())  
+
+
 def limpiar_nombre(texto:str)->str:
     return "".join([caracter for caracter in texto if caracter not in ['?','¿','"',"'",".",',',":"]])
     
@@ -44,9 +49,6 @@ def limpiar_texto(texto:str)->str:
     while texto[:1].isalnum()==False: 
         texto=texto[1:]   
     return transcripcion_simbolos_vocales(texto)
-
-def quitar_puntos(texto:str)->str:         
-    return texto.replace('.','').strip() 
     
 def total_caracteres(texto:str)->str:
     return texto[:5000]
@@ -54,11 +56,8 @@ def total_caracteres(texto:str)->str:
 def stringafecha(fecha:str)->datetime:
     return datetime.datetime.strptime(fecha,'%Y-%m-%d')
 
-def stringafechatiempo(fecha:str)->datetime:
+def string_to_datetime(fecha:str)->datetime:
     return datetime.datetime.strptime(fecha,'%Y-%m-%d %H:%M:%S')    
-
-def limpiarstringfechatiempo(fecha:str)->str:
-    return fecha.split('.')[0].replace("T"," ")
 
 def stringafloat(texto:str)->float: #TODO Este metodo puede ser mejorado a uno por expresion regular
     texto= texto.replace("UF","").replace("$","").replace("US","").replace("D","").replace("EUR","")
