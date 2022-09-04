@@ -12,11 +12,9 @@ def main():
     cantidad_total_de_peticiones_establecidos_en_la_API=8000
 
     obj_hora_chile=controller.HoraChile()
-    if obj_hora_chile.calcular_si_hora_de_extraccion_es_valida():# is False:
-        diferencia_entre_hora_inicio_extraccion_y_hora_chile=obj_hora_chile.hora_inicio_extraccion-obj_hora_chile.reconstruir_hora_de_chile()
-        print(f'Precaucion⚠: el programa se debe ejecutar entre las: {obj_hora_chile.hora_inicio_extraccion.time()} hasta las {obj_hora_chile.hora_final_extraccion.time()}, Horario de Chile')     
-        time.sleep(diferencia_entre_hora_inicio_extraccion_y_hora_chile.total_seconds()+1)
-
+    if obj_hora_chile.is_valid_extraction_time():# is False:
+        obj_hora_chile.wait_to_execution_time()
+    
     id_audiencia=num_page=None
 
     try:
@@ -29,10 +27,8 @@ def main():
         elements_url=["audiencias?page=","audiencias/", "cargos-pasivos/", "instituciones/"]
         
         with sql_connection.SQLServer() as crsr:
-            #List instituciones
-            crsr.execute('SELECT Id_Institucion, Id_Codigo FROM Ley_Lobby.dbo.Institucion')
-            obj_institucion =controller.Institucion()
-            obj_institucion.list_instituciones = crsr.fetchall()
+            #List instituciones           
+            controller.Institucion.get_all_instituciones()
 
             #Num_page INCREMENTO
             statement ='SELECT Page_Incremento,Page_Decremento,Page_Limit FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
@@ -54,8 +50,8 @@ def main():
                     id_audiencia=audiencia["id_audiencia"]
 
                     #Load Persona Pasiva
-                    obj_persona_pasiva=controller.Persona(audiencia['nombres'],audiencia['apellidos'])    #(self,nombres,apellidos): audiencia["id_sujeto_pasivo"]  
-                    obj_persona_pasiva.id_sujeto_pasivo_api=audiencia["id_sujeto_pasivo"]  
+                    obj_persona_pasiva = controller.Persona(audiencia['nombres'],audiencia['apellidos'])    #(self,nombres,apellidos): audiencia["id_sujeto_pasivo"]  
+                    obj_persona_pasiva.id_sujeto_pasivo_api = audiencia["id_sujeto_pasivo"]  
                     
                     #List Cargo_instituciones por id de sujeto Pasivo                                   
                     statement='SELECT P.Id_Perfil,P.Id_Institucion,P.Id_Cargo_API,DP.Fecha_Inicio_Cargo,DP.Fecha_Termino_Cargo,DP.Id_Resolucion,DP.Id_Url_Resolucion FROM [Ley_Lobby].[dbo].PERFIL P LEFT JOIN [Ley_Lobby].[dbo].DETALLE_PERFIL DP ON P.Id_Perfil=DP.id_Detalle_Perfil  WHERE Id_Sujeto_Pasivo_API=?'
@@ -65,8 +61,8 @@ def main():
 
                     #Get Cargos Pasivos API 
                     list_cargos_pasivos_api,time_start,flag=functions.get_request_api(url_api_list_cargos_pasivos.format(obj_persona_pasiva.id_sujeto_pasivo_api),time_start,header)                
-                    cantidad_total_de_peticiones_establecidos_en_la_API-=1                   
-                    codigo_institucion=None
+                    cantidad_total_de_peticiones_establecidos_en_la_API-=1
+                    
                     #Search and Insert todos los cargos de Persona Pasiva
                     for cargo_pasivo in list_cargos_pasivos_api: 
 
@@ -81,19 +77,16 @@ def main():
                         obj_cargo=controller.Cargo(cargo_pasivo["id_cargo_pasivo"],cargo_pasivo["cargo"],cargo_pasivo["resolucion"],cargo_pasivo["resolucion_url"],cargo_pasivo["fecha_inicio"],cargo_pasivo["fecha_termino"])                                   
                         
                         #Load Institucion            
-                        obj_institucion.id_institucion = cargo_pasivo["id_institucion"] 
+                        obj_institucion = controller.Institucion(cargo_pasivo["id_institucion"])
                         
                         #Si institucion no existe entonces Insert Institucion
                         if obj_institucion.codigo_institucion is None:                                                 
                             institucion,time_start,flag=functions.get_request_api(url_api_list_instituciones.format(obj_institucion.id_institucion),time_start,header)
                             cantidad_total_de_peticiones_establecidos_en_la_API-=1
                             obj_institucion.codigo_institucion = institucion["codigo"]
+                            obj_institucion.nombre = institucion["nombre"]
                             #Load a lista instituciones
-                            obj_institucion.list_instituciones.append([obj_institucion.id_institucion,obj_institucion.codigo_institucion])
-                            #Insert data
-                            store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Institucion_sp] ?,?,?;"
-                            params= (obj_institucion.id_institucion,obj_institucion.codigo_institucion,institucion["nombre"].strip())   
-                            crsr.execute(store_procedure,params)    
+                            obj_institucion.add()
 
                         #Insert Persona Pasiva            
                         store_procedure=" EXEC [Ley_Lobby].[dbo].[ins_Perfil_sp] ?,?,?,?,?,?,?;"
@@ -103,8 +96,7 @@ def main():
                         
                         #Cuando los id_cargos y las id_Instituciones sean iguales entonces se copiaran los valores entre las variables
                         if obj_cargo.id_cargo_api==audiencia['id_cargo'] and obj_institucion.id_institucion==audiencia['id_institucion']: 
-                            obj_persona_pasiva.id_perfil=id_perfil_temp                                                 
-                            codigo_institucion=obj_institucion.codigo_institucion
+                            obj_persona_pasiva.id_perfil=id_perfil_temp                                                                             
                         #Insert Detalle Persona Pasiva   
                         store_procedure="EXEC [Ley_Lobby].[dbo].[ins_Detalle_Perfil_sp] ?,?,?,?,?;"
                         crsr.execute(store_procedure,[id_perfil_temp,obj_cargo.fecha_inicio,obj_cargo.fecha_termino,obj_cargo.resolucion,obj_cargo.url_resolucion])
@@ -114,10 +106,9 @@ def main():
                             for identificador in obj_cargo.list_identificadores_vinculados:                  
                                 crsr.execute("EXEC [Ley_Lobby].[dbo].[ins_Perfil_Has_Identificador_sp] ?,?;",[id_perfil_temp,identificador])
 
+                    obj_institucion = controller.Institucion(audiencia["id_institucion"])
                     #En el caso de que el registro no este dentro de la lista "list_cargos_pasivos_api"... Entonces, buscarlo dentro de la "list_cargos_pasivos_db"
-                    if obj_persona_pasiva.id_perfil is None:
-                        obj_institucion.id_institucion=audiencia["id_institucion"]
-                        obj_institucion.codigo_institucion=codigo_institucion
+                    if obj_persona_pasiva.id_perfil is None:                                               
                         obj_persona_pasiva.id_perfil=next(cargo[0] for cargo in list_cargos_pasivos_db if obj_institucion.id_institucion==cargo[1] and cargo[2]==audiencia['id_cargo'])
                     
                     #Load Audiencia

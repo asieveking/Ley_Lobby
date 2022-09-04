@@ -1,6 +1,7 @@
 import datetime
+import time
 from dateutil import tz
-from sample import functions
+from sample import functions, sql_connection
 
 
 class Persona:
@@ -45,6 +46,19 @@ class Institucion:
     id_institucion: int
     _codigo_institucion: str = None
     list_instituciones: list = []
+    _nombre:str = None 
+
+    def __init__(self,id_institucion:int) -> None:
+        self.id_institucion=id_institucion   
+        self._codigo_institucion = None
+
+    @property
+    def nombre(self) -> str:
+        return self._nombre
+
+    @nombre.setter
+    def nombre(self,nombre:str) -> None:
+        self._nombre = nombre.strip()
 
     @property
     def codigo_institucion(self) -> str:
@@ -57,12 +71,25 @@ class Institucion:
         if codigo_institucion is not None:
             self._codigo_institucion = codigo_institucion
 
+    @classmethod
+    def get_all_instituciones(cls,crsr = sql_connection.SQLServer())-> None:
+        query = 'SELECT Id_Institucion, Id_Codigo FROM Ley_Lobby.dbo.Institucion'
+        cls.list_instituciones = crsr.get_all_rows(query)
+    
+    def add(self) -> None:
+        Institucion.list_instituciones.append([self.id_institucion,self.codigo_institucion])
+        self._insert()
+
+    def _insert(self, crsr = sql_connection.SQLServer()) -> None:
+        query = "EXEC [Ley_Lobby].[dbo].[ins_Institucion_sp] ?,?,?;"
+        params = (self.id_institucion,self.codigo_institucion,self.nombre)
+        crsr.insert(query,params)
+    
     def _get_codigo(self) -> None:
         self.codigo_institucion = next(
-            (id[1] for id in self.list_instituciones if id[0] == self.id_institucion),
+            (id[1] for id in Institucion.list_instituciones if id[0] == self.id_institucion),
             None,
         )
-
 
 class Cargo:
     id_cargo_api: int
@@ -83,7 +110,7 @@ class Cargo:
         fecha_termino: str,
     ):
         self.list_identificadores_vinculados = []
-        self.id_cargo_ap = id_cargo_api
+        self.id_cargo_api = id_cargo_api
         self.nombre_cargo = nombre_cargo
         self.resolucion = resolucion
         self.resolucion = url_resolucion
@@ -324,9 +351,7 @@ class Entidad:
             char.isalpha() for char in representante_directorio
         ):
             representante_directorio = functions.limpiar_texto(representante_directorio)
-            self.representante_directorio = functions.quitar_puntos(
-                representante_directorio
-            ).title()
+            self.representante_directorio = representante_directorio.replace('.','').title()
         if functions.es_vacio_o_nulo(naturaleza) is False and any(
             char.isalpha() for char in naturaleza
         ):
@@ -339,7 +364,7 @@ class Entidad:
             char.isalpha() for char in directorio
         ):
             directorio = functions.limpiar_texto(directorio)
-            self.directorio = functions.quitar_puntos(directorio).title()
+            self.directorio = directorio.replace('.','').title()
 
 
 class Materia:
@@ -380,11 +405,9 @@ class HoraChile:
             else 0
         )  # hora Oficial
 
-    def calcular_si_hora_de_extraccion_es_valida(self) -> bool:
-        return (
-            datetime.datetime.now(self.__utc_chile).replace(tzinfo=None)
-            < self.hora_inicio_extraccion
-        )
+    def is_valid_extraction_time(self) -> bool:
+        return  datetime.datetime.now(self.__utc_chile).replace(tzinfo=None) < self.hora_inicio_extraccion
+        
 
     def calcular_si_fecha_actual_es_menor_a_la_hora_final_de_extraccion(
         self, fecha_extraccion
@@ -406,6 +429,10 @@ class HoraChile:
             > self.hora_final_extraccion
         )
 
+    def wait_to_execution_time(self):
+        diferencia_entre_horas=self.hora_inicio_extraccion-self.reconstruir_hora_de_chile()
+        print(f'Precaucion⚠: el programa se debe ejecutar entre las: {self.hora_inicio_extraccion.time()} hasta las {self.hora_final_extraccion.time()}, Horario de Chile')     
+        time.sleep(diferencia_entre_horas.total_seconds()+1)
 
 class Num_Page:
     num_page_incremento: int

@@ -28,4 +28,9 @@ class SQLServer:
     def __exit__(self, exc_type, exc_value, traceback):      
         self.db_cursor.close()
         self.db_connection.close()
-    
+
+    def get_all_rows(self,query:str) -> list:
+        return self.db_cursor.execute(query).fetchall()
+
+    def insert(self,query:str, params:tuple) -> None:
+        self.db_cursor.execute(query,params)
