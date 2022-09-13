@@ -29,8 +29,8 @@ class SQLServer:
         self.db_cursor.close()
         self.db_connection.close()
 
-    def get_all_rows(self,query:str) -> list:
-        return self.db_cursor.execute(query).fetchall()
+    def get_all_rows(self,query:str,params:tuple = ()) -> list:
+        return self.db_cursor.execute(query, params).fetchall()    
 
-    def insert(self,query:str, params:tuple) -> None:
+    def update(self,query:str, params:tuple) -> None:
         self.db_cursor.execute(query,params)

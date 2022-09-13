@@ -25,25 +25,19 @@ def main():
 
         url="https://www.leylobby.gob.cl/api/v1/"
         elements_url=["audiencias?page=","audiencias/", "cargos-pasivos/", "instituciones/"]
-        
+        #Num_page INCREMENTO
+        obj_num_page = controller.Num_Page()
+
         with sql_connection.SQLServer() as crsr:
             #List instituciones           
             controller.Institucion.get_all_instituciones()
-
-            #Num_page INCREMENTO
-            statement ='SELECT Page_Incremento,Page_Decremento,Page_Limit FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
-            list_num_page=crsr.execute(statement,["Audiencia"]).fetchall()[0]        
-            obj_num_page = controller.Num_Page(*list_num_page)
-
-            num_page=obj_num_page.num_page
-            print(num_page)
-            
 
             url_api_list_audiencias_page,url_api_audiencia,url_api_list_cargos_pasivos,url_api_list_instituciones = [url+element+'{}' for element in elements_url ]             
             
             while obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==False:  
                 list_audiencias_api,time_start,flag=functions.get_request_api(url_api_list_audiencias_page.format(obj_num_page.num_page),time_start,header )
                 cantidad_total_de_peticiones_establecidos_en_la_API-=1
+                print(obj_num_page.num_page)
                 #Loop audiencias por page        
                 for audiencia in list_audiencias_api["data"]:
                     start_performance=time.time() 
@@ -168,25 +162,14 @@ def main():
                     
                     if obj_hora_chile.calcular_si_fecha_actual_es_mayor_a_la_hora_final_de_extraccion()==True:
                         break
-                
-                if obj_num_page.num_page_incremento<list_audiencias_api["last_page"]: 
-                    obj_num_page.num_page_incremento+=1 
-                    num_page= obj_num_page.num_page = obj_num_page.num_page_incremento 
-                    statement = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_INCREMENTO=?  WHERE Area_Num_Page=?'
-                    crsr.execute(statement,[obj_num_page.num_page,"AUDIENCIA"])  
-                elif obj_num_page.num_page_decremento> obj_num_page.num_page_limit:
-                    obj_num_page.num_page_decremento -=1
-                    num_page = obj_num_page.num_page= obj_num_page.num_page_decremento 
-                    statement = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_DECREMENTO=?  WHERE Area_Num_Page=?'
-                    crsr.execute(statement,[obj_num_page.num_page,"AUDIENCIA"]) 
-                elif obj_num_page.num_page_incremento>=list_audiencias_api["last_page"] and obj_num_page.num_page_decremento<= obj_num_page.num_page_limit:
+                    
+                if obj_num_page.is_valid_limit(list_audiencias_api["last_page"]) is False:
                     break
-                print(num_page)           
                     
     except Exception as exception:
         print(exception) 
         traceback.print_exc()    
-        print(f'id_audiencia:{id_audiencia}   N° pag: {num_page}')            
+        print(f'id_audiencia:{id_audiencia}   N° pag: {obj_num_page.num_page}')
           
 if __name__ == "__main__":
     main()

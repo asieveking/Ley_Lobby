@@ -83,7 +83,7 @@ class Institucion:
     def _insert(self, crsr = sql_connection.SQLServer()) -> None:
         query = "EXEC [Ley_Lobby].[dbo].[ins_Institucion_sp] ?,?,?;"
         params = (self.id_institucion,self.codigo_institucion,self.nombre)
-        crsr.insert(query,params)
+        crsr.update(query,params)
     
     def _get_codigo(self) -> None:
         self.codigo_institucion = next(
@@ -93,11 +93,11 @@ class Institucion:
 
 class Cargo:
     id_cargo_api: int
-    _nombre_cargo: str
-    _resolucion: str
-    _url_resolucion: str
-    _fecha_inicio: datetime
-    _fecha_termino: datetime
+    _nombre_cargo: str = None
+    _resolucion: str = None
+    _url_resolucion: str = None
+    _fecha_inicio: datetime = None
+    _fecha_termino: datetime = None
     list_identificadores_vinculados: list
 
     def __init__(
@@ -436,17 +436,50 @@ class HoraChile:
 
 class Num_Page:
     num_page_incremento: int
-    num_page_decremento: int
+    _num_page_decremento: int
     num_page_limit: int
     num_page: int
+    
+    def __init__(self) -> None:
+        self.num_page_incremento, num_page_decremento, self.num_page_limit = self.__get_num_page()       
+        self.num_page_decremento=num_page_decremento
+        self.num_page_incremento -= 2    
+        self.num_page = self.num_page_incremento              
 
-    def __init__(
-        self, num_page_incremento: int, num_page_decremento: int, num_page_limit: int
-    ):
-        self.num_page = self.num_page_incremento = num_page_incremento - 2
-        self.num_page_decremento = (
-            num_page_decremento
-            if num_page_limit == num_page_decremento
-            else num_page_decremento + 3
-        )
-        self.num_page_limit = num_page_limit
+    @property
+    def num_page_decremento(self) -> int:
+        return self._num_page_decremento
+
+    @num_page_decremento.setter
+    def num_page_decremento(self, num_page_decremento:int) -> None:
+        self._num_page_decremento = (num_page_decremento if self.num_page_limit <= num_page_decremento else num_page_decremento +3)
+   
+    def __get_num_page(self, csrs=sql_connection.SQLServer()) -> list:
+        query ='SELECT Page_Incremento,Page_Decremento,Page_Limit FROM Ley_Lobby.dbo.Num_Page where Area_Num_Page=?'
+        params = ('Audiencia')
+        return csrs.get_all_rows(query,params)[0]
+
+    def is_valid_limit(self,last_page:int) -> bool:
+        if self.num_page_incremento < last_page:
+            self.num_page_incremento += 1
+            self.num_page = self.num_page_incremento               
+            self.__update_incremento()
+            return True
+        elif self.num_page_decremento > self.num_page_limit:
+            self._num_page_decremento -= 1
+            self.num_page = self._num_page_decremento
+            self.__update_decremento()
+            return True
+        elif self.num_page_incremento >= last_page and self.num_page_decremento <= self.num_page_limit:
+            return False
+
+    def __update_incremento(self, csrs=sql_connection.SQLServer()) -> None:
+        query = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_INCREMENTO=?  WHERE Area_Num_Page=?'
+        params = (self.num_page,"AUDIENCIA")
+        csrs.update(query,params)
+
+    def __update_decremento(self, csrs=sql_connection.SQLServer()) -> None:
+        query = 'UPDATE Ley_Lobby.dbo.Num_Page set PAGE_DECREMENTO=?  WHERE Area_Num_Page=?'
+        params = (self.num_page,"AUDIENCIA")
+        csrs.update(query,params)
+    
